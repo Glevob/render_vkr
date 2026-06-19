@@ -1,0 +1,109 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <title>Добавление военкомата</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        html, body {
+            height: 100%;
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
+        }
+
+        .form-card {
+            border: none;
+            border-radius: 8px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #343a40;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{blocks/header :: header}"></div>
+
+<main>
+    <div class="container mt-5 pt-2">
+
+        <div class="mx-auto mb-3" style="max-width: 640px;">
+            <a th:href="@{/military-commissariats}" class="btn btn-link btn-sm text-decoration-none p-0 text-muted">
+                <i class="bi bi-arrow-left me-1"></i> Вернуться к списку военкоматов
+            </a>
+        </div>
+
+        <!-- Карточка формы -->
+        <div class="card shadow-sm form-card mb-5">
+            <div class="card-header bg-white pt-4 px-4 pb-0 border-0">
+                <h4 class="fw-bold text-dark mb-1">
+                    <i class="bi bi-plus-circle-fill text-success me-2"></i>Добавление военкомата
+                </h4>
+                <p class="text-muted small mb-0">Внесите официальное наименование нового комиссариата для регистрации в системе</p>
+                <hr class="mt-3 mb-0 opacity-25">
+            </div>
+
+            <div class="card-body p-4">
+                <form th:action="@{/military-commissariats/add}" th:object="${commissariat}" method="post">
+
+                    <div class="mb-4">
+                        <label for="commissariatName" class="form-label">Название военкомата</label>
+                        <input type="text"
+                               id="commissariatName"
+                               th:field="*{name}"
+                               class="form-control"
+                               placeholder="Например: Военный комиссариат Кировского района г. Ярославля"
+                               th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''"
+                               required>
+
+                        <div class="form-text small text-muted opacity-75">
+                            Указывайте полное официальное наименование государственного органа для корректного формирования документов и отчетов.
+                        </div>
+
+                        <div class="invalid-feedback fw-medium" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                            Ошибка уникальности названия
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top border-light">
+                        <a th:href="@{/military-commissariats}" class="btn btn-outline-secondary px-4 fw-semibold">
+                            Отмена
+                        </a>
+                        <button type="submit" class="btn btn-success px-4 fw-semibold shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i> Сохранить запись
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:insert="~{blocks/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

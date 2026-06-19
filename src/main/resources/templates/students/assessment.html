@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Мед. проверка, психотбор и успеваемость</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <style>
+        .table-align-middle td, .table-align-middle th {
+            vertical-align: middle;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        .form-control-custom {
+            border-color: #dee2e6;
+            transition: all 0.2s ease-in-out;
+        }
+        .form-control-custom:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+        .grade5 {
+            text-align: right;
+            font-weight: 500;
+        }
+        .grade100 {
+            text-align: right;
+            background-color: #f1f3f5 !important;
+            font-weight: 600;
+            color: #495057;
+            border-color: #e9ecef;
+        }
+        .sort-link {
+            text-decoration: none;
+            color: #495057;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .sort-link:hover {
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body class="bg-light text-dark">
+<div th:insert="~{blocks/header :: header}"></div>
+
+<main class="container py-5" style="padding-top: 5rem !important;">
+    <!-- Заголовок страницы -->
+    <div class="row align-items-center g-3 mb-4">
+        <div class="col-md">
+            <h1 class="h3 fw-bold mb-1">Результаты мед. проверки, психотбора и успеваемости</h1>
+            <p class="text-secondary mb-0">
+                Укажите для студентов результаты медицинской проверки, профессионально‑психологического отбора
+                и средний балл по 5‑балльной шкале. Пересчёт в 100‑балльную шкалу выполняется автоматически.
+            </p>
+        </div>
+        <div class="col-md-auto text-md-end">
+            <a href="/" class="btn btn-outline-secondary btn-sm px-3 rounded-pill">
+                <span class="me-1">←</span> На главную
+            </a>
+        </div>
+    </div>
+
+    <!-- Блок фильтров -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3 bg-white rounded-3 border">
+            <form th:action="@{/students/assessment}" method="get" class="row g-3 align-items-end">
+                <div class="col-6 col-sm-4 col-md-2">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Год подачи</label>
+                    <select name="year" class="form-select form-select-sm form-control-custom">
+                        <option value="-1" th:selected="${selectedYear == -1}">Все</option>
+
+                        <option th:each="y : ${applicationYears}"
+                                th:value="${y}"
+                                th:text="${y}"
+                                th:selected="${y == selectedYear}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-6 col-sm-8 col-md-3">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Группа</label>
+                    <select name="group" class="form-select form-select-sm form-control-custom">
+                        <option value="">Все группы</option>
+                        <option th:each="g : ${groups}"
+                                th:value="${g.nameGroup}"
+                                th:text="${g.nameGroup}"
+                                th:selected="${g.nameGroup == selectedGroup}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100 px-3 fw-medium">
+                        Применить фильтр
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Основной блок с таблицей -->
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <form th:action="@{/students/assessment(year=${selectedYear}, group=${selectedGroup})}" th:object="${studentsForm}" method="post" id="assessmentForm">
+                <div class="table-responsive">
+                    <table class="table table-hover table-align-middle mb-0" style="min-width: 900px;">
+                        <thead class="table-light border-bottom text-secondary small text-uppercase">
+                        <tr>
+                            <th style="width: 12%;">
+                                <a class="sort-link" th:href="@{/students/assessment(
+                                    year=${selectedYear},
+                                    group=${selectedGroup},
+                                    sortField='groupName',
+                                    sortDir=${sortField == 'groupName' and sortDir == 'asc' ? 'desc' : 'asc'}
+                                )}">
+                                    Группа
+                                    <th:block th:if="${sortField == 'groupName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></th:block>
+                                </a>
+                            </th>
+                            <th style="width: 25%;">
+                                <a class="sort-link" th:href="@{/students/assessment(
+                                    year=${selectedYear},
+                                    group=${selectedGroup},
+                                    sortField='fullName',
+                                    sortDir=${sortField == 'fullName' and sortDir == 'asc' ? 'desc' : 'asc'}
+                                )}">
+                                    ФИО
+                                    <th:block th:if="${sortField == 'fullName'}" th:text="${sortDir == 'asc' ? '↑' : '↓'}"></th:block>
+                                </a>
+                            </th>
+                            <th style="width: 18%;">Категория годности</th>
+                            <th style="width: 15%;">Категория ППО</th>
+                            <th style="width: 15%;">Успеваемость (3.0–5.0)</th>
+                            <th style="width: 15%;">100‑балльная шкала</th>
+                        </tr>
+                        </thead>
+                        <tbody class="border-top-0">
+                        <tr th:each="st, stat : *{students}">
+                            <td>
+                                <span class="badge bg-light text-dark border px-2 py-1.5 fw-medium"
+                                      th:text="*{students[__${stat.index}__].groupName}"></span>
+                            </td>
+                            <td class="fw-medium text-dark" th:text="*{students[__${stat.index}__].fullName}"></td>
+                            <td>
+                                <select th:field="*{students[__${stat.index}__].fitnessCategory}"
+                                        class="form-select form-select-sm form-control-custom">
+                                    <option value="">— не выбрано —</option>
+                                    <option th:each="c : ${T(ru.accouting.student.model.Student.FitnessCategory).values()}"
+                                            th:value="${c.name()}"
+                                            th:text="${c.label}">
+                                    </option>
+                                </select>
+                            </td>
+                            <td>
+                                <select th:field="*{students[__${stat.index}__].psychoCategory}"
+                                        class="form-select form-select-sm form-control-custom">
+                                    <option value="">— не выбрано —</option>
+                                    <option th:value="${T(ru.accouting.student.model.Student.PsychoCategory).I}">I</option>
+                                    <option th:value="${T(ru.accouting.student.model.Student.PsychoCategory).II}">II</option>
+                                    <option th:value="${T(ru.accouting.student.model.Student.PsychoCategory).III}">III</option>
+                                    <option th:value="${T(ru.accouting.student.model.Student.PsychoCategory).IV}">IV</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" min="2.00" max="5.00"
+                                       th:field="*{students[__${stat.index}__].grade5}"
+                                       class="form-control form-control-sm form-control-custom grade5"
+                                       placeholder="5.00">
+                            </td>
+                            <td>
+                                <input type="text" readonly
+                                       th:value="*{students[__${stat.index}__].grade100}"
+                                       class="form-control form-control-sm grade100">
+                            </td>
+                            <input type="hidden" th:field="*{students[__${stat.index}__].id}"/>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(studentsForm.students)}">
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                Студенты по выбранным критериям не найдены.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Панель сохранения данных -->
+                <div class="bg-light p-3 border-top d-flex justify-content-end">
+                    <button type="submit" id="submitBtn" class="btn btn-success px-4 py-2 rounded-2 fw-medium d-inline-flex align-items-center gap-2 shadow-sm">
+                        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span id="btnText">Сохранить изменения</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<div th:insert="~{blocks/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function convertTo100(grade5) {
+        if (!grade5) return "";
+        const g = parseFloat(grade5.replace(',', '.'));
+        if (isNaN(g)) return "";
+        if (g <= 3.0) return "0.00";
+        if (g >= 5.0) return "100.00";
+        const steps = Math.round((g - 3.0) / 0.02);
+        return steps.toFixed(2);
+    }
+
+    document.addEventListener("input", function (e) {
+        if (e.target.classList.contains("grade5")) {
+            const row = e.target.closest("tr");
+            const out = row.querySelector(".grade100");
+            out.value = convertTo100(e.target.value);
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("assessmentForm");
+        const submitBtn = document.getElementById("submitBtn");
+        const btnSpinner = document.getElementById("btnSpinner");
+        const btnText = document.getElementById("btnText");
+
+        if (form && submitBtn) {
+            form.addEventListener("submit", function () {
+                submitBtn.disabled = true;
+                btnSpinner.classList.remove("d-none");
+                btnText.textContent = "Сохранение...";
+            });
+        }
+    });
+</script>
+</body>
+</html>

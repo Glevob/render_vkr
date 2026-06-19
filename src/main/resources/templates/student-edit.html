@@ -1,0 +1,201 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Редактирование студента</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card-form {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{blocks/header :: header}"></div>
+<main>
+    <div class="container mt-5 pt-4">
+        <div class="card shadow card-form">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Редактирование данных студента</h4>
+                <small th:text="${student.lastName + ' ' + student.firstName + ' ' + student.patronymic}">ФИО</small>
+            </div>
+
+            <div class="card-body">
+                <form th:action="@{|/student-applied/${student.idStudent}/edit|}"
+                      th:object="${student}" method="post">
+
+                    <!-- ФИО -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Фамилия</label>
+                            <input type="text" th:field="*{lastName}"
+                                   class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Имя</label>
+                            <input type="text" th:field="*{firstName}"
+                                   class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Отчество</label>
+                            <input type="text" th:field="*{patronymic}"
+                                   class="form-control">
+                        </div>
+                    </div>
+
+                    <!-- Дата рождения -->
+                    <div class="mb-3">
+                        <label class="form-label">Дата рождения</label>
+                        <input type="date" th:field="*{birthday}"
+                               class="form-control" required>
+                    </div>
+
+                    <!-- ГРУППА -->
+                    <div class="mb-3">
+                        <label for="groupSelect" class="form-label">Группа</label>
+                        <select id="groupSelect"
+                                class="form-select"
+                                th:field="*{groupStudent}">
+                            <option value="">-- Выберите группу --</option>
+                            <option th:each="g : ${groups}"
+                                    th:value="${g.id}"
+                                    th:text="${g.nameGroup}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Автоинформация по группе -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Курс</label>
+                            <input type="text" id="courseInfo" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Специальность</label>
+                            <input type="text" id="specialtyInfo" class="form-control" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Военкомат -->
+                    <div class="mb-3">
+                        <label class="form-label">Военкомат</label>
+                        <select class="form-select"
+                                th:field="*{militaryCommissariat}" required>
+                            <option value="">-- Выберите военкомат --</option>
+                            <option th:each="mc : ${commissariats}"
+                                    th:value="${mc.id}"
+                                    th:text="${mc.name}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- ВУС -->
+                    <div class="mb-3">
+                        <label class="form-label">Воинский учет (ВУС)</label>
+                        <select class="form-select"
+                                th:field="*{militaryAccountingSpecialty}" required>
+                            <option value="">-- Выберите ВУС --</option>
+                            <option th:each="v : ${vusList}"
+                                    th:value="${v.id}"
+                                    th:text="${v.code + ' - ' + v.title}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Документы и контакты -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Студенческий билет</label>
+                            <input type="text" th:field="*{studentIdCard}"
+                                   class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Телефон</label>
+                            <input type="text" th:field="*{phoneNumber}"
+                                   class="form-control" placeholder="+7 ..." required>
+                        </div>
+                    </div>
+
+                    <!-- Льгота -->
+                    <div class="mb-4">
+                        <label class="form-label">Примечание (noteStudent)</label>
+                        <input type="text" th:field="*{noteStudent}"
+                               class="form-control"
+                               placeholder="льгота, целевое, мед. ограничения и т.п.">
+                        <div class="form-text">Опционально, краткое примечание по студенту.</div>
+                    </div>
+
+                    <!-- Кнопки -->
+                    <div class="d-flex justify-content-between">
+                        <a th:href="@{/student-applied}" class="btn btn-outline-secondary">
+                            Отмена
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            Сохранить изменения
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<div th:insert="~{blocks/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const groupSelect = document.getElementById('groupSelect');
+    const courseInfo = document.getElementById('courseInfo');
+    const specialtyInfo = document.getElementById('specialtyInfo');
+
+    async function loadGroupInfo() {
+        const groupId = groupSelect.value;
+
+        courseInfo.value = '';
+        specialtyInfo.value = '';
+
+        if (!groupId) {
+            return;
+        }
+
+        try {
+            const resp = await fetch(`/groups/${groupId}/info`);
+            if (!resp.ok) return;
+
+            const data = await resp.json();
+            courseInfo.value = data.course ?? '';
+            specialtyInfo.value = data.specialtyCode + ' - ' + data.specialtyTitle;
+        } catch (e) {
+            console.error('Ошибка загрузки информации о группе', e);
+        }
+    }
+
+    groupSelect.addEventListener('change', loadGroupInfo);
+
+    window.addEventListener('DOMContentLoaded', () => {
+        if (groupSelect.value) {
+            loadGroupInfo();
+        }
+    });
+</script>
+</body>
+</html>

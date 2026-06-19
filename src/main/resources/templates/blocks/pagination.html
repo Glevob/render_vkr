@@ -1,0 +1,39 @@
+<nav th:fragment="pagination(page, targetParam, otherParam, otherPageNum)" aria-label="Pagination" th:if="${page.totalPages > 1}">
+    <ul class="pagination pagination-sm justify-content-center mt-4">
+
+        <!-- В начало -->
+        <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+            <a class="page-link" th:href="@{/admin-physical(__${targetParam}__=0, __${otherParam}__=${otherPageNum})}">&laquo;&laquo;</a>
+        </li>
+
+        <!-- На 10 назад -->
+        <li class="page-item" th:classappend="${page.number - 10 < 0} ? 'disabled'">
+            <a class="page-link" th:href="@{/admin-physical(__${targetParam}__=${page.number - 10}, __${otherParam}__=${otherPageNum})}">-10</a>
+        </li>
+
+        <!-- Страницы влево -->
+        <li class="page-item" th:each="i : ${#numbers.sequence(4, 1)}" th:if="${page.number - i >= 0}">
+            <a class="page-link" th:href="@{/admin-physical(__${targetParam}__=${page.number - i}, __${otherParam}__=${otherPageNum})}" th:text="${page.number - i + 1}"></a>
+        </li>
+
+        <!-- Текущая -->
+        <li class="page-item active">
+            <span class="page-link" th:text="${page.number + 1}"></span>
+        </li>
+
+        <!-- Страницы вправо -->
+        <li class="page-item" th:each="i : ${#numbers.sequence(1, 4)}" th:if="${page.number + i < page.totalPages}">
+            <a class="page-link" th:href="@{/admin-physical(__${targetParam}__=${page.number + i}, __${otherParam}__=${otherPageNum})}" th:text="${page.number + i + 1}"></a>
+        </li>
+
+        <!-- На 10 вперед -->
+        <li class="page-item" th:classappend="${page.number + 10 >= page.totalPages} ? 'disabled'">
+            <a class="page-link" th:href="@{/admin-physical(__${targetParam}__=${page.number + 10}, __${otherParam}__=${otherPageNum})}">+10</a>
+        </li>
+
+        <!-- В конец -->
+        <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+            <a class="page-link" th:href="@{/admin-physical(__${targetParam}__=${page.totalPages - 1}, __${otherParam}__=${otherPageNum})}">&raquo;&raquo;</a>
+        </li>
+    </ul>
+</nav>

@@ -1,0 +1,200 @@
+<!-- Вроде здесь имелся ввиду протокол-->
+
+
+
+<!--<!DOCTYPE HTML>-->
+<!--<html xmlns:th="http://www.thymeleaf.org" lang="ru">-->
+<!--<head>-->
+<!--    <title>Конкурсный список студентов</title>-->
+<!--    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />-->
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">-->
+<!--    <style>-->
+<!--        html, body { height: 100%; }-->
+<!--        body { display: flex; flex-direction: column; min-height: 100vh; }-->
+<!--        main { flex: 1 0 auto; }-->
+<!--        footer { flex-shrink: 0; }-->
+<!--        .table-header-row-2 th { font-weight: normal; font-size: 0.9rem; }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div th:insert="~{blocks/header :: header}"></div>-->
+
+<!--<main>-->
+<!--    <div class="container mt-5 pt-4">-->
+<!--        <h1 class="mb-4">Конкурсный список студентов</h1>-->
+
+<!--        &lt;!&ndash; Фильтры &ndash;&gt;-->
+<!--        <form th:action="@{/contest-list}" method="get" class="row g-2 mb-4">-->
+<!--            <div class="col-md-2">-->
+<!--                <label class="form-label mb-1">Код специальности</label>-->
+<!--                <select name="specialtyCode" class="form-select form-select-sm">-->
+<!--                    <option value="">Все</option>-->
+<!--                    <option th:each="sp : ${specialtyCodes}"-->
+<!--                            th:value="${sp}" th:text="${sp}"-->
+<!--                            th:selected="${sp == selectedSpecialtyCode}">-->
+<!--                    </option>-->
+<!--                </select>-->
+<!--            </div>-->
+<!--            <div class="col-md-2">-->
+<!--                <label class="form-label mb-1">Институт</label>-->
+<!--                <select name="institute" class="form-select form-select-sm">-->
+<!--                    <option value="">Все</option>-->
+<!--                    <option th:each="inst : ${institutes}"-->
+<!--                            th:value="${inst}" th:text="${inst}"-->
+<!--                            th:selected="${inst == selectedInstitute}">-->
+<!--                    </option>-->
+<!--                </select>-->
+<!--            </div>-->
+<!--            <div class="col-md-2">-->
+<!--                <label class="form-label mb-1">Курс</label>-->
+<!--                <select name="course" class="form-select form-select-sm">-->
+<!--                    <option value="">Все</option>-->
+<!--                    <option th:each="c : ${courses}"-->
+<!--                            th:value="${c}" th:text="${c}"-->
+<!--                            th:selected="${c == selectedCourse}">-->
+<!--                    </option>-->
+<!--                </select>-->
+<!--            </div>-->
+<!--            <div class="col-md-2">-->
+<!--                <label class="form-label mb-1">Группа</label>-->
+<!--                <select name="group" class="form-select form-select-sm">-->
+<!--                    <option value="">Все</option>-->
+<!--                    <option th:each="g : ${groups}"-->
+<!--                            th:value="${g}" th:text="${g}"-->
+<!--                            th:selected="${g == selectedGroup}">-->
+<!--                    </option>-->
+<!--                </select>-->
+<!--            </div>-->
+
+<!--            <div class="col-md-2">-->
+<!--                <label class="form-label mb-1">Примечание</label>-->
+<!--                <select name="hasNote" class="form-select form-select-sm">-->
+<!--                    <option value="" th:selected="${selectedHasNote == null or selectedHasNote == ''}">Все</option>-->
+<!--                    <option value="with" th:selected="${selectedHasNote == 'with'}">С примечанием</option>-->
+<!--                    <option value="without" th:selected="${selectedHasNote == 'without'}">Без примечания</option>-->
+<!--                </select>-->
+<!--            </div>-->
+
+<!--            <input type="hidden" name="sortField" th:value="${sortField}">-->
+<!--            <input type="hidden" name="sortDir" th:value="${sortDir}">-->
+<!--            <div class="col-12 mt-2">-->
+<!--                <button type="submit" class="btn btn-sm btn-outline-secondary">Фильтровать</button>-->
+<!--                <a th:href="@{/contest-list}" class="btn btn-sm btn-link">Сбросить</a>-->
+<!--            </div>-->
+<!--        </form>-->
+
+<!--        <div th:if="${#lists.isEmpty(students)}" class="alert alert-info">-->
+<!--            Список пуст.-->
+<!--        </div>-->
+
+<!--        <div th:if="${!#lists.isEmpty(students)}" class="table-responsive">-->
+<!--            <table class="table table-striped table-hover align-middle">-->
+<!--                <thead class="table-primary">-->
+<!--                <tr>-->
+<!--                    <th>-->
+<!--                        <a th:href="@{/contest-list(-->
+<!--                                sortField='lastName',-->
+<!--                                sortDir=${reverseSortDir},-->
+<!--                                specialtyCode=${selectedSpecialtyCode},-->
+<!--                                institute=${selectedInstitute},-->
+<!--                                course=${selectedCourse},-->
+<!--                                group=${selectedGroup},-->
+<!--                                hasNote=${selectedHasNote}-->
+<!--                             )}">-->
+<!--                            № п/п-->
+<!--                        </a>-->
+<!--                    </th>-->
+<!--                    <th>-->
+<!--                        <a th:href="@{/contest-list(-->
+<!--                                sortField='lastName',-->
+<!--                                sortDir=${reverseSortDir},-->
+<!--                                specialtyCode=${selectedSpecialtyCode},-->
+<!--                                institute=${selectedInstitute},-->
+<!--                                course=${selectedCourse},-->
+<!--                                group=${selectedGroup},-->
+<!--                                hasNote=${selectedHasNote}-->
+<!--                             )}">-->
+<!--                            Фамилия, имя, отчество (дата рождения)-->
+<!--                        </a>-->
+<!--                    </th>-->
+<!--                    <th>-->
+<!--                        <a th:href="@{/contest-list(-->
+<!--                                sortField='specialty.codeSpecialty',-->
+<!--                                sortDir=${reverseSortDir},-->
+<!--                                specialtyCode=${selectedSpecialtyCode},-->
+<!--                                institute=${selectedInstitute},-->
+<!--                                course=${selectedCourse},-->
+<!--                                group=${selectedGroup},-->
+<!--                                hasNote=${selectedHasNote}-->
+<!--                             )}">-->
+<!--                            Код специальности-->
+<!--                        </a>-->
+<!--                    </th>-->
+<!--                    <th>-->
+<!--                        <a th:href="@{/contest-list(-->
+<!--                                sortField='specialty.institute,course',-->
+<!--                                sortDir=${reverseSortDir},-->
+<!--                                specialtyCode=${selectedSpecialtyCode},-->
+<!--                                institute=${selectedInstitute},-->
+<!--                                course=${selectedCourse},-->
+<!--                                group=${selectedGroup},-->
+<!--                                hasNote=${selectedHasNote}-->
+<!--                             )}">-->
+<!--                            Институт, курс-->
+<!--                        </a>-->
+<!--                    </th>-->
+<!--                    <th>-->
+<!--                        <a th:href="@{/contest-list(-->
+<!--                                sortField='groupStudent.nameGroup',-->
+<!--                                sortDir=${reverseSortDir},-->
+<!--                                specialtyCode=${selectedSpecialtyCode},-->
+<!--                                institute=${selectedInstitute},-->
+<!--                                course=${selectedCourse},-->
+<!--                                group=${selectedGroup},-->
+<!--                                hasNote=${selectedHasNote}-->
+<!--                             )}">-->
+<!--                            Группа-->
+<!--                        </a>-->
+<!--                    </th>-->
+<!--                    &lt;!&ndash; НОВЫЙ СТОЛБЕЦ: Примечание &ndash;&gt;-->
+<!--                    <th>-->
+<!--                        <a th:href="@{/contest-list(-->
+<!--                                sortField='noteStudent',-->
+<!--                                sortDir=${reverseSortDir},-->
+<!--                                specialtyCode=${selectedSpecialtyCode},-->
+<!--                                institute=${selectedInstitute},-->
+<!--                                course=${selectedCourse},-->
+<!--                                group=${selectedGroup},-->
+<!--                                hasNote=${selectedHasNote}-->
+<!--                             )}">-->
+<!--                            Примечание-->
+<!--                        </a>-->
+<!--                    </th>-->
+<!--                </tr>-->
+<!--                <tr class="table-header-row-2">-->
+<!--                    <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th>-->
+<!--                </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+<!--                <tr th:each="student, stat : ${students}">-->
+<!--                    <td th:text="${stat.index + 1}">1</td>-->
+<!--                    <td th:text="${student.lastName} + ' ' + ${student.firstName} +-->
+<!--                                  (${student.patronymic} != null ? ' ' + ${student.patronymic} + ', ' : ', ') + ${student.birthday}">-->
+<!--                    </td>-->
+<!--                    <td th:text="${student.specialty?.codeSpecialty}">24.03.05</td>-->
+<!--                    <td th:text="${student.specialty?.institute} + ', ' + ${student.course} + ' курс'">-->
+<!--                    </td>-->
+<!--                    <td th:text="${student.groupStudent?.nameGroup}">ЦПС-10</td>-->
+<!--                    &lt;!&ndash; значение примечания &ndash;&gt;-->
+<!--                    <td th:text="${student.noteStudent}">—</td>-->
+<!--                </tr>-->
+<!--                </tbody>-->
+<!--            </table>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</main>-->
+
+<!--<div th:insert="~{blocks/footer :: footer}"></div>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>-->
+<!--</body>-->
+<!--</html>-->

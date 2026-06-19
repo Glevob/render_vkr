@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${formTitle}">Учебная группа</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        html, body {
+            height: 100%;
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
+        }
+
+        .form-card {
+            border: none;
+            border-radius: 8px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #343a40;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{blocks/header :: header}"></div>
+<main>
+    <div class="container mt-5 pt-2">
+
+        <div class="mx-auto mb-3" style="max-width: 640px;">
+            <a th:href="@{/groups}" class="btn btn-link btn-sm text-decoration-none p-0 text-muted">
+                <i class="bi bi-arrow-left me-1"></i> Вернуться к списку групп
+            </a>
+        </div>
+
+        <!-- Форма -->
+        <div class="card shadow-sm form-card mb-5">
+            <div class="card-header bg-white pt-4 px-4 pb-0 border-0">
+                <h4 class="fw-bold text-dark mb-1">
+                    <i th:if="${group.id == null}" class="bi bi-plus-circle-fill text-success me-2"></i>
+                    <i th:if="${group.id != null}" class="bi bi-pencil-square text-warning me-2"></i>
+                    <span th:text="${formTitle}">Учебная группа</span>
+                </h4>
+                <p class="text-muted small mb-0">Укажите наименование группы и закрепите за ней направление подготовки (специальность)</p>
+                <hr class="mt-3 mb-0 opacity-25">
+            </div>
+
+            <div class="card-body p-4">
+
+                <!-- Блок 1 - создание -->
+                <form th:if="${group.id} == null" th:object="${group}" th:action="@{/groups}" method="post">
+
+                    <div class="mb-3">
+                        <label class="form-label" for="nameGroup">Название учебной группы</label>
+                        <input id="nameGroup" type="text" class="form-control"
+                               placeholder="Например: ЦИС-11"
+                               th:field="*{nameGroup}"
+                               th:classappend="${#fields.hasErrors('nameGroup')} ? 'is-invalid' : ''"
+                               required>
+                        <div class="form-text small text-muted opacity-75">
+                            Используйте общепринятую кодировку академических групп учебного заведения.
+                        </div>
+                        <div class="invalid-feedback fw-medium" th:if="${#fields.hasErrors('nameGroup')}" th:errors="*{nameGroup}">
+                            Ошибка названия группы
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="specialty">Гражданская специальность</label>
+                        <select id="specialty" class="form-select" th:field="*{specialty}" required>
+                            <option value="">-- Выберите из справочника специальностей --</option>
+                            <option th:each="spec : ${specialties}"
+                                    th:value="${spec.id}"
+                                    th:text="${spec.codeSpecialty + ' — ' + spec.titleSpecialty}">
+                            </option>
+                        </select>
+                        <div class="form-text small text-muted opacity-75">
+                            Специальность определяет базовый учебный план, к которому привязывается группа.
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top border-light">
+                        <a th:href="@{/groups}" class="btn btn-outline-secondary px-4 fw-semibold">Отмена</a>
+                        <button type="submit" class="btn btn-success px-4 fw-semibold shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i> Создать группу
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Блок 2 - редактирование -->
+                <form th:if="${group.id} != null" th:object="${group}" th:action="@{/groups/{id}(id=${group.id})}" method="post">
+
+                    <div class="mb-3">
+                        <label class="form-label" for="nameGroupEdit">Название учебной группы</label>
+                        <input id="nameGroupEdit" type="text" class="form-control"
+                               placeholder="Например: ЦИС-11"
+                               th:field="*{nameGroup}"
+                               th:classappend="${#fields.hasErrors('nameGroup')} ? 'is-invalid' : ''"
+                               required>
+                        <div class="form-text small text-muted opacity-75">
+                            Внимание: изменение имени группы отразится на всех карточках закрепленных за ней курсантов.
+                        </div>
+                        <div class="invalid-feedback fw-medium" th:if="${#fields.hasErrors('nameGroup')}" th:errors="*{nameGroup}">
+                            Ошибка названия группы
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="specialtyEdit">Гражданская специальность</label>
+                        <select id="specialtyEdit" class="form-select" th:field="*{specialty}" required>
+                            <option value="">-- Выберите из справочника специальностей --</option>
+                            <option th:each="spec : ${specialties}"
+                                    th:value="${spec.id}"
+                                    th:text="${spec.codeSpecialty + ' — ' + spec.titleSpecialty}">
+                            </option>
+                        </select>
+                        <div class="form-text small text-muted opacity-75">
+                            Корректируйте только в случае ошибочного связывания при первичном вводе данных.
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top border-light">
+                        <a th:href="@{/groups}" class="btn btn-outline-secondary px-4 fw-semibold">Отмена</a>
+                        <button type="submit" class="btn btn-success px-4 fw-semibold shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i> Сохранить изменения
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</main>
+<div th:insert="~{blocks/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

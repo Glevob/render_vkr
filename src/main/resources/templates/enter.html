@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход в систему</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+    <style>
+        body {
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center">
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h1 class="h4 text-center mb-4">Вход</h1>
+
+                    <!-- Блок для сообщений об ошибках -->
+                    <div id="errorAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                    <form id="loginForm" class="mb-3">
+                        <div class="mb-3">
+                            <label for="login" class="form-label">Логин</label>
+                            <input type="text"
+                                   id="login"
+                                   name="login"
+                                   class="form-control"
+                                   placeholder="Введите логин"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Пароль</label>
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   class="form-control"
+                                   placeholder="Введите пароль"
+                                   required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mt-2">
+                            Войти
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('loginForm');
+    const errorAlert = document.getElementById('errorAlert');
+
+    function showError(message) {
+        errorAlert.textContent = message;
+        errorAlert.classList.remove('d-none');
+    }
+
+    function hideError() {
+        errorAlert.classList.add('d-none');
+        errorAlert.textContent = '';
+    }
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        hideError();
+
+        const data = {
+            login: document.getElementById('login').value,
+            password: document.getElementById('password').value
+        };
+
+        fetch('/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        })
+            .then(async response => {
+                if (response.ok) {
+                    window.location.href = '/';
+                } else if (response.status === 401) {
+                    showError('Неверный логин или пароль');
+                } else {
+                    let message = 'Ошибка авторизации. Пожалуйста, попробуйте ещё раз.';
+                    try {
+                        const text = await response.text();
+                        if (text) {
+                            message = text;
+                        }
+                    } catch (e) {
+                    }
+                    showError(message);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showError('Произошла ошибка сети. Пожалуйста, попробуйте ещё раз.');
+            });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Протокол конкурсного отбора</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+    <style>
+        .table-fixed-header thead th {
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            z-index: 10;
+            box-shadow: inset 0 -1px 0 #dee2e6;
+        }
+
+        .col-small { width: 85px; white-space: nowrap; }
+        .col-very-small { width: 55px; white-space: nowrap; }
+
+        .row-passed { background-color: #f2fcf5 !important; }
+        .row-over-limit { background-color: #fffdf5 !important; }
+        .row-failed { background-color: #fff8f8 !important; }
+
+        .table-container {
+            max-height: 650px;
+            overflow-y: auto;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .form-control-custom {
+            border-color: #dee2e6;
+            transition: all 0.2s ease-in-out;
+        }
+        .form-control-custom:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+
+        .exercise-header {
+            background-color: #f1f3f5 !important;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body class="bg-light text-dark">
+
+<div th:insert="~{blocks/header :: header}"></div>
+
+<main class="container-fluid px-4 py-5" style="padding-top: 5rem !important;">
+
+    <!-- Заголовок страницы -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1 text-dark">Протокол конкурсного отбора</h1>
+            <p class="text-secondary mb-0">
+                Просмотр и анализ результатов распределения кандидатов по итогам испытаний.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="/" class="btn btn-outline-secondary btn-sm px-3 rounded-2">
+                <i class="bi bi-arrow-left"></i> На главную
+            </a>
+
+            <a sec:authorize="hasAnyAuthority('TECHNOLOGIST','FULL')"
+               th:href="@{/student-management(year=${selectedYear})}"
+               class="btn btn-dark btn-sm px-3 rounded-2">
+                <i class="bi bi-sliders"></i> Управление статусами
+            </a>
+        </div>
+    </div>
+
+    <!-- Информационная панель для Сиудента -->
+    <div sec:authorize="hasAuthority('USER')" class="alert alert-custom alert-info d-flex align-items-center shadow-sm mb-4" role="alert">
+        <i class="bi bi-info-circle-fill me-3 fs-5"></i>
+        <div>Вы видите только информацию о результатах собственного отбора.</div>
+    </div>
+
+    <!-- Блок управления и фильтров (для ТЕХНОЛОГА и FULL) -->
+    <div sec:authorize="hasAnyAuthority('TECHNOLOGIST','FULL')" class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 bg-white rounded-3 border">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                <h6 class="m-0 fw-bold text-secondary text-uppercase small tracking-wider">
+                    <i class="bi bi-funnel-fill me-1"></i> Параметры и расчет отбора
+                </h6>
+
+                <form th:action="@{/contest-protocol/update-statuses}" method="post" class="d-inline">
+                    <input type="hidden" name="year" th:value="${selectedYear}">
+                    <input type="hidden" name="limit" th:value="${limit}">
+                    <input type="hidden" name="specialtyCode" th:value="${selectedSpecialtyCode}">
+
+                    <button type="submit" class="btn btn-success btn-sm px-3 rounded-2 fw-medium shadow-sm">
+                        <i class="bi bi-arrow-repeat"></i> Обновить статусы в БД
+                    </button>
+                </form>
+            </div>
+
+            <div class="col-12 col-md-3">
+                <a th:href="@{/contest-protocol/export(year=${selectedYear}, specialtyCode=${selectedSpecialtyCode}, limit=${limit})}"
+                   class="btn btn-outline-success btn-sm px-3 rounded-2 shadow-sm">
+                    <i class="bi bi-file-earmark-excel"></i> Выгрузить Excel (ZIP)
+                </a>
+            </div>
+
+            <form class="row g-3 align-items-end" method="get" th:action="@{/contest-protocol}">
+                <div class="col-sm-6 col-md-2">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Год набора</label>
+                    <select name="year" class="form-select form-select-sm form-control-custom">
+                        <option th:each="y : ${availableYears}"
+                                th:value="${y}"
+                                th:text="${y}"
+                                th:selected="${y == selectedYear}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-sm-6 col-md-5">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Программа подготовки (специальность)</label>
+                    <select name="specialtyCode" class="form-select form-select-sm form-control-custom">
+                        <option value="">Все программы</option>
+                        <option th:each="spec : ${specialties}"
+                                th:value="${spec.code}"
+                                th:text="${spec.code + ' — ' + spec.title}"
+                                th:selected="${spec.code == selectedSpecialtyCode}"></option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Расчет потребност</label>
+                    <input name="limit" type="number" class="form-control form-control-sm form-control-custom text-center fw-bold text-primary"
+                           th:value="${limit}" min="1" max="500" required>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-medium">
+                        <i class="bi bi-filter"></i> Сформировать протокол
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Уведомления системы -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-3 fs-4 text-success"></i>
+            <div>
+                <strong class="d-block mb-0.5">Успешно!</strong>
+                <span class="text-secondary small">Статусы студентов в базе данных были актуализированы в соответствии с текущим расчетом.</span>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-3 fs-4 text-danger"></i>
+            <div>
+                <strong class="d-block mb-0.5">Внимание!</strong>
+                <span th:text="${errorMessage}" class="small">У вас нет доступа к обновлению статусов</span>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Сводная статистика распределения-->
+    <div sec:authorize="hasAnyAuthority('TECHNOLOGIST','FULL')" th:if="${param.year != null}" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-white rounded-3 border-start border-success border-4 h-100">
+                <div class="card-body py-3 px-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <!-- Заголовок -->
+                        <div class="text-secondary small fw-medium text-uppercase tracking-wider mb-1">Принято</div>
+
+                        <h3 class="m-0 fw-bold text-success">
+                            <span th:text="${#lists.size(passedWithinLimit)}">0</span>
+                        </h3>
+                    </div>
+                    <div class="p-3 bg-success-subtle text-success rounded-circle"><i class="bi bi-person-check fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-white rounded-3 border-start border-warning border-4 h-100">
+                <div class="card-body py-3 px-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-secondary small fw-medium text-uppercase tracking-wider mb-1">Резерв / Сверх потребности</div>
+                        <h3 class="m-0 fw-bold text-warning" th:text="${#lists.size(passedOverLimit)}">0</h3>
+                    </div>
+                    <div class="p-3 bg-warning-subtle text-warning rounded-circle"><i class="bi bi-person-dash fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-white rounded-3 border-start border-danger border-4 h-100">
+                <div class="card-body py-3 px-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-secondary small fw-medium text-uppercase tracking-wider mb-1">Не прошли пред. отбор</div>
+                        <h3 class="m-0 fw-bold text-danger" th:text="${#lists.size(failedPrelim)}">0</h3>
+                    </div>
+                    <div class="p-3 bg-danger-subtle text-danger rounded-circle"><i class="bi bi-person-x fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Первая таблица - Конкурс -->
+    <div class="card border-0 shadow-sm mb-5 rounded-3 overflow-hidden border">
+        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+            <span class="fw-bold tracking-wide text-uppercase small"><i class="bi bi-list-ol me-2"></i> 1. Основной конкурсный список граждан</span>
+            <span class="badge bg-light text-dark px-2 py-1.5 fw-semibold" th:text="'Всего в списке: ' + ${#lists.size(passedWithinLimit) + #lists.size(passedOverLimit)} + ' чел.'"></span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive table-container">
+                <table class="table table-sm align-middle mb-0 table-fixed-header table-bordered border-light-subtle">
+                    <thead class="table-light border-bottom text-secondary small text-center align-middle">
+                    <tr>
+                        <th rowspan="2" class="col-very-small">№ п/п</th>
+                        <th rowspan="2" style="min-width: 220px;">ФИО, дата рождения</th>
+                        <th rowspan="2" class="col-small">Код спец.</th>
+                        <th rowspan="2" style="min-width: 200px;">Результаты предв. отбора<br><span class="text-muted lowercase small">(кат. годности, псих. кат)</span></th>
+                        <th rowspan="2" class="col-small">Возраст.<br>группа</th>
+                        <th colspan="9" class="exercise-header fw-bold text-dark border-bottom-0">Результаты по физическим упражнениям</th>
+                        <th rowspan="2" class="col-small bg-light-subtle fw-bold text-dark">Общий<br>балл ФП</th>
+                        <th rowspan="2" class="col-small">Соответств.<br>требов. ФП</th>
+                        <th rowspan="2" class="col-small">ФП<br>(100-б.)</th>
+                        <th rowspan="2" class="col-small">Льготы</th>
+                        <th rowspan="2" class="col-small">Учёба<br>(100-б.)</th>
+                        <th rowspan="2" class="col-small bg-dark-subtle fw-bold text-dark">Итоговый<br>балл</th>
+                        <th rowspan="2" style="min-width: 180px;">Решение конкурсной комиссии</th>
+                    </tr>
+                    <tr class="exercise-header border-top">
+                        <th class="col-small text-muted fw-normal border-start">№ упр. 1</th>
+                        <th class="col-small text-muted fw-normal">Результ. 1</th>
+                        <th class="col-small text-dark fw-semibold">Балл 1</th>
+                        <th class="col-small text-muted fw-normal border-start">№ упр. 2</th>
+                        <th class="col-small text-muted fw-normal">Результ. 2</th>
+                        <th class="col-small text-dark fw-semibold">Балл 2</th>
+                        <th class="col-small text-muted fw-normal border-start">№ упр. 3</th>
+                        <th class="col-small text-muted fw-normal">Результ. 3</th>
+                        <th class="col-small text-dark fw-semibold border-end">Балл 3</th>
+                    </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+
+                    <!-- Прошедшие в расчет потредности (Зеленые строки) -->
+                    <tr th:each="row, stat : ${passedWithinLimit}" class="row-passed">
+                        <td class="text-center text-secondary fw-medium" th:text="${stat.index + 1}"></td>
+                        <td>
+                            <div class="fw-bold text-dark" th:text="${row.fullName}"></div>
+                            <small class="text-secondary" th:text="${row.birthDate}"></small>
+                        </td>
+                        <td class="text-center font-monospace small text-secondary fw-bold" th:text="${row.universitySpecialtyCode}"></td>
+                        <td class="small">
+                            Годность: <span class="badge bg-white text-dark border px-1.5" th:text="${row.fitnessCategoryLabel}"></span>
+                            ППО: <span class="badge bg-white text-dark border px-1.5 mt-1" th:text="${row.psychoCategory}"></span>
+                        </td>
+                        <td class="text-center"><span class="badge bg-opacity-75 bg-success text-white" th:text="${row.ageGroup}"></span></td>
+
+                        <td class="text-center text-secondary" th:text="${row.strengthExerciseNumber}"></td>
+                        <td class="text-center" th:text="${row.strengthResult}"></td>
+                        <td class="text-center fw-semibold text-dark" th:text="${row.strengthPoints}"></td>
+
+                        <td class="text-center text-secondary border-start" th:text="${row.speedExerciseNumber}"></td>
+                        <td class="text-center" th:text="${row.speedResult}"></td>
+                        <td class="text-center fw-semibold text-dark" th:text="${row.speedPoints}"></td>
+
+                        <td class="text-center text-secondary border-start" th:text="${row.enduranceExerciseNumber}"></td>
+                        <td class="text-center" th:text="${row.enduranceResult}"></td>
+                        <td class="text-center fw-semibold text-dark border-end" th:text="${row.endurancePoints}"></td>
+
+                        <td class="text-center fw-bold text-primary table-active" th:text="${row.totalPoints}"></td>
+                        <td class="text-center small fw-bold text-success" th:text="${row.physicalRequirementsMatch}"></td>
+                        <td class="text-center fw-medium" th:text="${row.physical100}"></td>
+
+                        <td class="text-center">
+                            <span th:if="${row.hasQuotaRight}" class="badge bg-warning text-dark px-2 py-1">10%</span>
+                            <span th:if="${row.hasPriorityRight}" class="badge bg-info text-dark px-2 py-1">преим.</span>
+                            <span th:unless="${row.hasQuotaRight or row.hasPriorityRight}" class="text-muted small">—</span>
+                        </td>
+
+                        <td class="text-center fw-medium" th:text="${row.academic100}"></td>
+                        <td class="text-center fw-bold text-dark table-active fs-6" th:text="${row.finalScore}"></td>
+                        <td>
+                            <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle d-block p-2 text-wrap" th:text="${row.commissionDecision}"></span>
+                        </td>
+                    </tr>
+
+                    <!-- Прошедшие сверх расчета потребности (Желтые строки) -->
+                    <tr th:each="row, stat : ${passedOverLimit}" class="row-over-limit">
+                        <td class="text-center text-secondary fw-medium" th:text="${#lists.size(passedWithinLimit) + stat.index + 1}"></td>
+                        <td>
+                            <div class="fw-bold text-dark" th:text="${row.fullName}"></div>
+                            <small class="text-secondary" th:text="${row.birthDate}"></small>
+                        </td>
+                        <td class="text-center font-monospace small text-secondary fw-bold" th:text="${row.universitySpecialtyCode}"></td>
+                        <td class="small">
+                            Годность: <span class="badge bg-white text-dark border px-1.5" th:text="${row.fitnessCategoryLabel}"></span><br>
+                            Психо: <span class="badge bg-white text-dark border px-1.5 mt-1" th:text="${row.psychoCategory}"></span>
+                        </td>
+                        <td class="text-center"><span class="badge bg-opacity-75 bg-warning text-dark" th:text="${row.ageGroup}"></span></td>
+
+                        <td class="text-center text-secondary" th:text="${row.strengthExerciseNumber}"></td>
+                        <td class="text-center" th:text="${row.strengthResult}"></td>
+                        <td class="text-center fw-semibold text-dark" th:text="${row.strengthPoints}"></td>
+
+                        <td class="text-center text-secondary border-start" th:text="${row.speedExerciseNumber}"></td>
+                        <td class="text-center" th:text="${row.speedResult}"></td>
+                        <td class="text-center fw-semibold text-dark" th:text="${row.speedPoints}"></td>
+
+                        <td class="text-center text-secondary border-start" th:text="${row.enduranceExerciseNumber}"></td>
+                        <td class="text-center" th:text="${row.enduranceResult}"></td>
+                        <td class="text-center fw-semibold text-dark border-end" th:text="${row.endurancePoints}"></td>
+
+                        <td class="text-center fw-bold text-primary table-active" th:text="${row.totalPoints}"></td>
+                        <td class="text-center small fw-bold text-success" th:text="${row.physicalRequirementsMatch}"></td>
+                        <td class="text-center fw-medium" th:text="${row.physical100}"></td>
+
+                        <td class="text-center">
+                            <span th:if="${row.hasQuotaRight}" class="badge bg-warning text-dark px-2 py-1">10%</span>
+                            <span th:if="${row.hasPriorityRight}" class="badge bg-info text-dark px-2 py-1">преим.</span>
+                            <span th:unless="${row.hasQuotaRight or row.hasPriorityRight}" class="text-muted small">—</span>
+                        </td>
+
+                        <td class="text-center fw-medium" th:text="${row.academic100}"></td>
+                        <td class="text-center fw-bold text-dark table-active fs-6" th:text="${row.finalScore}"></td>
+                        <td>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle d-block p-2 text-wrap" th:text="${row.commissionDecision}"></span>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(passedWithinLimit) and #lists.isEmpty(passedOverLimit)}">
+                        <td colspan="22" class="text-center py-5 text-muted bg-white">
+                            <i class="bi bi-folder-x fs-2 d-block mb-2"></i> Данные по выбранным критериям отсутствуют.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Вторая таблица - не прошедшие отбор -->
+    <div sec:authorize="hasAnyAuthority('TECHNOLOGIST','FULL')" class="card border-0 shadow-sm rounded-3 overflow-hidden border">
+        <div class="card-header bg-danger text-white py-3 d-flex justify-content-between align-items-center">
+            <span class="fw-bold tracking-wide text-uppercase small"><i class="bi bi-x-circle me-2"></i> 2. Список граждан, не прошедших предварительный отбор</span>
+            <span class="badge bg-white text-danger px-2 py-1.5 fw-semibold" th:text="${#lists.size(failedPrelim)} + ' чел.'"></span>
+        </div>
+        <div class="card-body p-0">
+            <div th:if="${#lists.isEmpty(failedPrelim)}" class="p-5 text-center text-success bg-white">
+                <i class="bi bi-shield-check text-success fs-1 d-block mb-2"></i>
+                <h5 class="fw-bold m-0">Все кандидаты успешно прошли предварительный отбор!</h5>
+                <p class="text-secondary small mb-0 mt-1">Граждан с критическими неудовлетворительными оценками не обнаружено.</p>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(failedPrelim)}" class="table-responsive table-container">
+                <table class="table table-sm align-middle mb-0 table-fixed-header table-bordered border-light-subtle">
+                    <thead class="table-light border-bottom text-secondary small text-center align-middle">
+                    <tr>
+                        <th rowspan="2" class="col-very-small">№ п/п</th>
+                        <th rowspan="2" style="min-width: 220px;">ФИО, дата рождения</th>
+                        <th rowspan="2" class="col-small">Код спец.</th>
+                        <th rowspan="2" style="min-width: 200px;">Результаты предв. отбора<br><span class="text-muted lowercase small">(кат. годности, псих. кат)</span></th>
+                        <th rowspan="2" class="col-small">Возраст.<br>группа</th>
+                        <th colspan="9" class="exercise-header fw-bold text-dark border-bottom-0">Результаты по физическим упражнениям</th>
+                        <th rowspan="2" class="col-small bg-light-subtle fw-bold text-dark">Общий<br>балл ФП</th>
+                        <th rowspan="2" class="col-small">Соответств.<br>требов. ФП</th>
+                        <th rowspan="2" class="col-small">ФП<br>(100-б.)</th>
+                        <th rowspan="2" class="col-small">Льготы</th>
+                        <th rowspan="2" class="col-small">Учёба<br>(100-б.)</th>
+                        <th rowspan="2" class="col-small bg-dark-subtle fw-bold text-dark">Итоговый<br>балл</th>
+                        <th rowspan="2" style="min-width: 180px;">Причина отказа / Решение комиссии</th>
+                    </tr>
+                    <tr class="exercise-header border-top">
+                        <th class="col-small text-muted fw-normal border-start">№ упр. 1</th>
+                        <th class="col-small text-muted fw-normal">Результ. 1</th>
+                        <th class="col-small text-dark fw-semibold">Балл 1</th>
+                        <th class="col-small text-muted fw-normal border-start">№ упр. 2</th>
+                        <th class="col-small text-muted fw-normal">Результ. 2</th>
+                        <th class="col-small text-dark fw-semibold">Балл 2</th>
+                        <th class="col-small text-muted fw-normal border-start">№ упр. 3</th>
+                        <th class="col-small text-muted fw-normal">Результ. 3</th>
+                        <th class="col-small text-dark fw-semibold border-end">Балл 3</th>
+                    </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                    <tr th:each="row, stat : ${failedPrelim}" class="row-failed">
+                        <td class="text-center text-secondary fw-medium" th:text="${stat.index + 1}"></td>
+                        <td>
+                            <div class="fw-bold text-dark" th:text="${row.fullName}"></div>
+                            <small class="text-secondary" th:text="${row.birthDate}"></small>
+                        </td>
+                        <td class="text-center font-monospace small text-secondary fw-bold" th:text="${row.universitySpecialtyCode}"></td>
+                        <td class="small text-danger">
+                            Годность: <span class="badge bg-white text-danger border border-danger-subtle px-1.5" th:text="${row.fitnessCategoryLabel}"></span><br>
+                            ППО: <span class="badge bg-white text-danger border border-danger-subtle px-1.5 mt-1" th:text="${row.psychoCategory}"></span>
+                        </td>
+                        <td class="text-center">
+                            <span th:if="${row.ageGroup != null}" th:text="${row.ageGroup}" class="badge bg-secondary"></span>
+                            <span th:unless="${row.ageGroup != null}" class="text-muted small">—</span>
+                        </td>
+
+                        <td class="text-center text-secondary" th:text="${row.strengthExerciseNumber} ?: '—'"></td>
+                        <td class="text-center" th:text="${row.strengthResult} ?: '—'"></td>
+                        <td class="text-center" th:text="${row.strengthPoints} ?: 0"></td>
+
+                        <td class="text-center text-secondary border-start" th:text="${row.speedExerciseNumber} ?: '—'"></td>
+                        <td class="text-center" th:text="${row.speedResult} ?: '—'"></td>
+                        <td class="text-center" th:text="${row.speedPoints} ?: 0"></td>
+
+                        <td class="text-center text-secondary border-start" th:text="${row.enduranceExerciseNumber} ?: '—'"></td>
+                        <td class="text-center" th:text="${row.enduranceResult} ?: '—'"></td>
+                        <td class="text-center border-end" th:text="${row.endurancePoints} ?: 0"></td>
+
+                        <td class="text-center fw-bold text-danger table-active" th:text="${row.totalPoints} ?: 0"></td>
+                        <td class="text-center small fw-bold text-danger" th:text="${row.physicalRequirementsMatch}"></td>
+                        <td class="text-center text-muted" th:text="${row.physical100} ?: 0"></td>
+
+                        <td class="text-center">
+                            <span th:if="${row.hasQuotaRight}" class="badge bg-warning text-dark px-2 py-1">10%</span>
+                            <span th:if="${row.hasPriorityRight}" class="badge bg-info text-dark px-2 py-1">преим.</span>
+                            <span th:unless="${row.hasQuotaRight or row.hasPriorityRight}" class="text-muted small">—</span>
+                        </td>
+
+                        <td class="text-center text-muted" th:text="${row.academic100} ?: 0"></td>
+                        <td class="text-center fw-bold text-secondary table-active" th:text="${row.finalScore} ?: 0"></td>
+
+                        <td>
+                            <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle d-block p-2 text-wrap fw-semibold"
+                                  style="line-height: 1.3;"
+                                  th:text="${row.commissionDecisionFormatted}">
+                                IV группа ППО. Не соответствует уровню ФП
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<div th:insert="~{blocks/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

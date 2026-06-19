@@ -1,0 +1,68 @@
+<div th:fragment="header"
+     xmlns:th="http://www.w3.org/1999/xhtml"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-semibold" href="/">
+                ВУЦ ЯГТУ
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#mainNavbar" aria-controls="mainNavbar"
+                    aria-expanded="false" aria-label="Переключить навигацию">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                    <!-- Кнопки только для Сотрудника и Администратора -->
+                    <li class="nav-item" sec:authorize="hasAnyAuthority('TECHNOLOGIST','FULL')">
+                        <a class="nav-link" href="/lists">Списки</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasAnyAuthority('TECHNOLOGIST','FULL')">
+                        <a class="nav-link" href="/students">Студенты</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasAnyAuthority('FULL')">
+                        <a class="nav-link" href="/admin">Администрирование</a>
+                    </li>
+
+                </ul>
+
+                <!-- Блок приветствия + кнопки -->
+                <div class="d-flex align-items-center gap-2">
+
+                    <!-- Приветствие гостя -->
+                    <span class="text-light small" sec:authorize="isAnonymous()">
+                        Добро пожаловать, Гость
+                    </span>
+
+                    <!-- Приветствие авторизованного -->
+                    <span class="text-light small" sec:authorize="isAuthenticated()">
+                        Добро пожаловать,
+                        <span sec:authentication="name">User</span>
+                        (<span sec:authentication="principal.userRoles[0].userAuthority">ROLE</span>)
+                    </span>
+
+                    <!-- Кнопка "Войти" для гостя -->
+                    <a sec:authorize="isAnonymous()"
+                       th:href="@{/enter}"
+                       class="btn btn-outline-light btn-sm">
+                        Войти
+                    </a>
+
+                    <!-- Кнопка "Выйти" для авторизованного -->
+                    <form sec:authorize="isAuthenticated()"
+                          th:action="@{/auth/logout}"
+                          method="post"
+                          class="m-0">
+                        <button type="submit" class="btn btn-outline-light btn-sm">
+                            Выйти
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>

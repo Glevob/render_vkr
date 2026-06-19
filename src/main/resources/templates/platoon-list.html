@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список взводов</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        html, body {
+            height: 100%;
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
+        }
+
+        .table-card {
+            border: none;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table-hover tbody tr {
+            transition: background-color 0.15s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{blocks/header :: header}"></div>
+
+<main>
+    <div class="container mt-5 pt-2">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">
+                    <i class="bi bi-flag-fill text-primary me-2"></i>Список взводов
+                </h2>
+                <p class="text-muted small mb-0">Реестр и академическое распределение учебных взводов центра</p>
+            </div>
+            <a th:href="@{/platoons/create}" class="btn btn-success fw-semibold px-3 shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Создать взвод
+            </a>
+        </div>
+
+        <!-- Сообщение об ощибке -->
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill fs-5 me-3"></i>
+                <div th:text="${errorMessage}">Невозможно удалить взвод: с ним связаны студенты.</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Сообщение о пусчтом списке -->
+        <div th:if="${#lists.isEmpty(platoons)}" class="alert alert-info border-0 shadow-sm d-flex align-items-center py-3 mb-4 bg-white rounded-3">
+            <i class="bi bi-info-circle-fill text-info fs-4 me-3"></i>
+            <div>
+                <span class="fw-semibold text-secondary">В базе данных еще нет записей.</span>
+                <p class="text-muted small mb-0">Нажмите кнопку «Создать взвод», чтобы добавить первое подразделение.</p>
+            </div>
+        </div>
+
+        <!-- Таблица Взводов -->
+        <div th:if="${!#lists.isEmpty(platoons)}" class="card shadow-sm table-card mb-4">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                    <tr>
+                        <th scope="col" style="width: 70px; padding: 12px 16px;">#</th>
+                        <th scope="col" style="width: 220px; padding: 12px 16px;">Название взвода</th>
+                        <th scope="col" style="padding: 12px 16px;">Программа подготовки / Специальность</th>
+                        <th scope="col" class="text-end" style="width: 120px; padding: 12px 16px;">Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="platoon, stat : ${platoons}">
+                        <td style="padding: 12px 16px;" class="text-muted small" th:text="${stat.index + 1}">1</td>
+                        <td style="padding: 12px 16px;" class="fw-bold text-dark" th:text="${platoon.namePlatoon}">101 взвод</td>
+
+                        <td style="padding: 12px 16px;">
+                            <span th:if="${platoon.specialty != null}">
+                                <span class="badge bg-secondary font-monospace px-2 py-1.5 me-2"
+                                      th:text="${platoon.specialty.code}">09.02.07</span>
+                                <span class="text-dark fw-medium" th:text="${platoon.specialty.title}">Информационные системы</span>
+                            </span>
+                            <span th:if="${platoon.specialty == null}" class="text-muted">—</span>
+                        </td>
+
+                        <td class="text-end" style="padding: 12px 16px;">
+                            <a th:href="@{|/platoons/delete/${platoon.id}|}"
+                               class="btn btn-outline-danger btn-sm"
+                               title="Удалить взвод"
+                               onclick="return confirm('Вы уверены, что хотите безвозвратно удалить этот взвод?');">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Блок с блокировкой удаления (из-за связанных студентов) -->
+        <div th:if="${linkedStudents != null}" class="mb-4">
+            <div class="card border-danger shadow-sm">
+                <div class="card-header bg-danger bg-opacity-10 text-danger fw-bold py-3">
+                    <i class="bi bi-shield-fill-exclamation me-2"></i>Критическая зависимость данных: Студенты внутри взвода
+                </div>
+                <div class="card-body p-4">
+                    <p class="card-text text-secondary mb-4 small">
+                        Процедура удаления заблокирована. За данным подразделением все еще закреплены активные курсанты.
+                        Перераспределите личный состав взвода, после чего повторите попытку.
+                    </p>
+
+                    <div class="table-responsive border rounded">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-secondary small">
+                            <tr>
+                                <th scope="col" style="padding: 10px 16px;">Фамилия</th>
+                                <th scope="col" style="padding: 10px 16px;">Имя</th>
+                                <th scope="col" style="padding: 10px 16px;">Отчество</th>
+                                <th scope="col" style="padding: 10px 16px;">Учебная группа</th>
+                            </tr>
+                            </thead>
+                            <tbody class="small">
+                            <tr th:if="${#lists.isEmpty(linkedStudents)}">
+                                <td colspan="4" class="text-muted text-center py-3">
+                                    Связанных студентов внутри данного подразделения не обнаружено.
+                                </td>
+                            </tr>
+                            <tr th:each="s : ${linkedStudents}">
+                                <td style="padding: 10px 16px;" class="fw-bold text-dark" th:text="${s.lastName}">Иванов</td>
+                                <td style="padding: 10px 16px;" th:text="${s.firstName}">Иван</td>
+                                <td style="padding: 10px 16px;" th:text="${s.patronymic}">Иванович</td>
+                                <td style="padding: 10px 16px;">
+                                    <span class="badge bg-light text-dark border"
+                                          th:text="${s.groupStudent != null ? s.groupStudent.nameGroup : '—'}">
+                                        ЦИС-11
+                                    </span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<div th:insert="~{blocks/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

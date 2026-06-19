@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактирование профиля</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .form-card { max-width: 600px; border: none; border-radius: 12px; }
+        .card-header { background-color: #fff; border-bottom: 1px solid #eee; border-radius: 12px 12px 0 0 !important; }
+    </style>
+</head>
+<body>
+
+<div th:insert="~{blocks/header :: header}"></div>
+
+<main class="container py-5">
+    <div class="d-flex justify-content-center mb-4">
+        <a href="/admin/users" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Вернуться к списку
+        </a>
+    </div>
+
+    <div class="card form-card shadow-sm mx-auto">
+        <div class="card-header p-4">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-pencil-square text-primary me-2"></i>Редактирование</h4>
+            <small class="text-muted" th:text="'ID пользователя: ' + ${user.idUser}"></small>
+        </div>
+
+        <div class="card-body p-4">
+            <form th:action="@{'/admin/users/' + ${user.idUser}}" method="post">
+
+                <!-- Логин -->
+                <div class="mb-3">
+                    <label for="login" class="form-label small fw-bold">Логин</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                        <input type="text" id="login" name="login" class="form-control" th:value="${user.login}" required>
+                    </div>
+                </div>
+
+                <!-- Пароль -->
+                <div class="mb-3">
+                    <label for="password" class="form-label small fw-bold">Новый пароль</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Оставьте пустым, чтобы не менять">
+                    </div>
+                </div>
+
+                <!-- Права доступа -->
+                <div class="mb-4">
+                    <label for="authority" class="form-label small fw-bold">Права доступа</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-shield-lock"></i></span>
+                        <select id="authority" name="authority" class="form-select">
+                            <option th:each="auth : ${allAuthorities}"
+                                    th:value="${auth.name()}"
+                                    th:text="${auth.name()}"
+                                    th:selected="${user.userRoles != null and #lists.contains(user.userRoles.![userAuthority], auth.name())}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary py-2 fw-bold">
+                        <i class="bi bi-check-circle me-1"></i> Сохранить изменения
+                    </button>
+                    <a href="/admin/users" class="btn btn-light py-2">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

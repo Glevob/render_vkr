@@ -1,0 +1,42 @@
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8" />-->
+<!--    <title>Студенты</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--<h2>Список студентов</h2>-->
+
+<!--<table border="1">-->
+<!--    <thead>-->
+<!--    <tr>-->
+<!--        <th>Имя</th>-->
+<!--        <th>Фамилия</th>-->
+<!--        <th>Email</th>-->
+<!--    </tr>-->
+<!--    </thead>-->
+<!--    <tbody>-->
+<!--    <tr th:each="student : ${students}">-->
+<!--        <td th:text="${student.firstName}">Имя</td>-->
+<!--        <td th:text="${student.lastName}">Фамилия</td>-->
+<!--        <td th:text="${student.email}">Email</td>-->
+<!--    </tr>-->
+<!--    </tbody>-->
+<!--</table>-->
+
+<!--<div sec:authorize="hasRole('ADMIN')">-->
+<!--    <h3>Загрузить Excel файл</h3>-->
+<!--    <form th:action="@{/api/students/upload}" method="post" enctype="multipart/form-data">-->
+<!--        <input type="file" name="file" />-->
+<!--        <button type="submit">Загрузить</button>-->
+<!--    </form>-->
+<!--</div>-->
+
+<!--<div>-->
+<!--    <a th:href="@{/api/students/download/excel}">Скачать Excel</a> |-->
+<!--    <a th:href="@{/api/students/download/pdf}">Скачать PDF</a>-->
+<!--</div>-->
+
+<!--<a th:href="@{/}">На главную</a>-->
+<!--</body>-->
+<!--</html>-->

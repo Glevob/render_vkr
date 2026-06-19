@@ -1,0 +1,227 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <title>Студенты, подавшие заявление</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
+        }
+
+
+        .sort-header-link {
+            color: #212529 !important;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: color 0.15s ease-in-out;
+        }
+
+        .sort-header-link:hover {
+            color: #0d6efd !important;
+        }
+
+        .table-card {
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{blocks/header :: header}"></div>
+
+<main>
+    <div class="container mt-5 pt-3">
+
+        <!-- Блок с управлением -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+            <div>
+                <h1 class="fw-bold text-dark h2 mb-1">
+                    <i class="bi bi-file-earmark-person text-primary me-2"></i>Студенты, подавшие заявление
+                </h1>
+                <p class="text-muted small mb-0">Управление входящими заявлениями абитуриентов и студентов.</p>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/student-applied/export-credentials(
+                    applicationYear=${selectedApplicationYear},
+                    group=${selectedGroup},
+                    course=${selectedCourse},
+                    specialty=${selectedSpecialty},
+                    institute=${selectedInstitute},
+                    sortField=${sortField},
+                    sortDir=${sortDir}
+                )}" class="btn btn-outline-primary d-inline-flex align-items-center fw-medium">
+                    <i class="bi bi-file-earmark-excel me-1.5"></i> Выгрузить Excel
+                </a>
+
+                <a th:href="@{/student-applied/add}" class="btn btn-success d-inline-flex align-items-center fw-medium shadow-sm">
+                    <i class="bi bi-plus-circle me-1.5"></i> Добавить студента
+                </a>
+            </div>
+        </div>
+
+        <!-- Блок фильтров -->
+        <div class="card shadow-sm border-0 p-4 mb-4 bg-white rounded-3">
+            <div class="d-flex align-items-center gap-2 mb-3 text-secondary border-bottom pb-2">
+                <i class="bi bi-funnel"></i>
+                <span class="fw-semibold small text-uppercase tracking-wider">Параметры фильтрации</span>
+            </div>
+
+            <form th:action="@{/student-applied}" method="get" class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label text-muted small fw-bold mb-1">Год подачи</label>
+                    <select name="applicationYear" class="form-select form-select-sm">
+                        <option value="">Все годы</option>
+                        <option th:each="y : ${applicationYears}"
+                                th:value="${y}"
+                                th:text="${y}"
+                                th:selected="${y == selectedApplicationYear}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label text-muted small fw-bold mb-1">Группа</label>
+                    <select name="group" class="form-select form-select-sm">
+                        <option th:value="''" th:selected="${selectedGroup == null}">Все группы</option>
+                        <option th:each="g : ${groups}" th:value="${g.nameGroup}" th:text="${g.nameGroup}" th:selected="${g.nameGroup == selectedGroup}"></option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label text-muted small fw-bold mb-1">Курс</label>
+                    <select name="course" class="form-select form-select-sm">
+                        <option th:value="''" th:selected="${selectedCourse == null}">Все курсы</option>
+                        <option th:each="c : ${courses}" th:value="${c}" th:text="${c}" th:selected="${c == selectedCourse}"></option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold mb-1">Специальность</label>
+                    <select name="specialty" class="form-select form-select-sm">
+                        <option th:value="''" th:selected="${selectedSpecialty == null}">Все специальности</option>
+                        <option th:each="sp : ${specialties}" th:value="${sp.titleSpecialty}" th:text="${sp.codeSpecialty + ' - ' + sp.titleSpecialty}" th:selected="${sp.titleSpecialty == selectedSpecialty}"></option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold mb-1">Институт</label>
+                    <select name="institute" class="form-select form-select-sm">
+                        <option th:value="''" th:selected="${selectedInstitute == null}">Все институты</option>
+                        <option th:each="inst : ${institutes}" th:value="${inst}" th:text="${inst}" th:selected="${inst == selectedInstitute}"></option>
+                    </select>
+                </div>
+
+                <!-- Сохраняем состояние сортировки при фильтрации -->
+                <input type="hidden" name="sortField" th:value="${sortField}">
+                <input type="hidden" name="sortDir" th:value="${sortDir}">
+
+                <div class="col-12 d-flex justify-content-start align-items-center gap-2 mt-3 pt-2 border-top border-light">
+                    <button type="submit" class="btn btn-sm btn-primary px-3 fw-medium">
+                        <i class="bi bi-search me-1"></i> Применить фильтр
+                    </button>
+                    <a th:href="@{/student-applied}" class="btn btn-sm btn-outline-secondary px-3 fw-medium">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Сбросить
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Уведомления -->
+        <div th:if="${createdLogin}" class="alert alert-success d-flex align-items-center shadow-sm mb-4" role="alert">
+            <i class="bi bi-shield-check fs-4 me-2"></i>
+            <div>
+                Учетная запись успешно создана! Логин: <strong class="badge bg-success text-white font-monospace fs-6" th:text="${createdLogin}"></strong>,
+                пароль: <strong class="badge bg-success text-white font-monospace fs-6" th:text="${createdPassword}"></strong>
+            </div>
+        </div>
+
+        <!-- Если список пуст -->
+        <div th:if="${#lists.isEmpty(students)}" class="alert alert-info d-flex align-items-center shadow-sm p-4" role="alert">
+            <i class="bi bi-info-circle-fill display-6 text-info me-3"></i>
+            <div>
+                <h5 class="fw-bold mb-1">Реестр пуст</h5>
+                <p class="mb-0 text-muted small">По заданным критериям фильтрации записей студентов не обнаружено.</p>
+            </div>
+        </div>
+
+        <!-- Таблица студентов -->
+        <div th:if="${!#lists.isEmpty(students)}" class="card shadow-sm table-card mb-5">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-light border-bottom">
+                    <tr>
+                        <th style="width: 70px; padding: 14px;">#</th>
+                        <!-- Цикл сортировки ФИО -->
+                        <th th:each="field : ${ {'lastName', 'firstName', 'patronymic'} }" style="padding: 14px;">
+                            <a th:href="@{/student-applied(sortField=${field}, sortDir=${reverseSortDir}, applicationYear=${selectedApplicationYear}, group=${selectedGroup}, course=${selectedCourse}, specialty=${selectedSpecialty}, institute=${selectedInstitute})}"
+                               class="sort-header-link fw-bold">
+                                <span th:text="${field == 'lastName' ? 'Фамилия' : (field == 'firstName' ? 'Имя' : 'Отчество')}"></span>
+                                <i th:if="${sortField == field}" th:class="${sortDir == 'asc'} ? 'bi bi-arrow-up text-primary' : 'bi bi-arrow-down text-primary'"></i>
+                                <i th:if="${sortField != field}" class="bi bi-arrow-down-up text-muted opacity-50 small"></i>
+                            </a>
+                        </th>
+                        <th style="padding: 14px;">Группа</th>
+                        <th style="width: 90px; padding: 14px;">Курс</th>
+                        <th style="padding: 14px;">Специальность</th>
+                        <th style="width: 120px; padding: 14px;" class="text-end">Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="student, stat : ${students}">
+                        <td th:text="${stat.index + 1}" style="padding: 14px;" class="text-muted font-monospace small"></td>
+                        <td th:text="${student.lastName}" style="padding: 14px;" class="fw-bold text-dark"></td>
+                        <td th:text="${student.firstName}" style="padding: 14px;"></td>
+                        <td th:text="${student.patronymic}" style="padding: 14px;"></td>
+                        <td style="padding: 14px;">
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold px-2 py-1.5"
+                                  th:text="${student.groupStudent?.nameGroup != null ? student.groupStudent.nameGroup : '—'}"></span>
+                        </td>
+                        <td th:text="${student.course}" style="padding: 14px;" class="fw-medium"></td>
+                        <td style="padding: 14px;" class="small text-muted">
+                            <span th:if="${student.groupStudent?.specialty != null}"
+                                  th:text="${student.groupStudent.specialty.codeSpecialty + ' - ' + student.groupStudent.specialty.titleSpecialty}"></span>
+                            <span th:if="${student.groupStudent?.specialty == null}">—</span>
+                        </td>
+                        <td class="text-end" style="padding: 14px;">
+                            <form th:action="@{|/student-applied/${student.idStudent}/delete|}" method="post" class="d-inline-block"
+                                  onsubmit="return confirm('Вы уверены, что хотите окончательно удалить запись этого студента?')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm px-2.5 py-1" title="Удалить студента">
+                                    <i class="bi bi-trash"></i> Удалить
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<div th:insert="~{blocks/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

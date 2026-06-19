@@ -1,0 +1,59 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.7'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'ru.accouting'
+version = '0.0.1-SNAPSHOT'
+description = 'Demo project for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springCloudVersion', "2023.0.1")
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Spring Data JPA для работы с базой
+	implementation 'org.springframework.boot:spring-boot-starter-security' // Spring Boot Starter Security для авторизации и аутентификации
+	implementation 'org.springframework.boot:spring-boot-starter-web' // Spring Boot Starter Web (REST, Tomcat и т.д.)
+	implementation 'org.liquibase:liquibase-core'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+	compileOnly 'org.projectlombok:lombok' // Lombok для сокращения шаблонного кода
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'org.postgresql:postgresql' // PostgreSQL драйвер
+	annotationProcessor 'org.projectlombok:lombok' // Lombok для сокращения шаблонного кода
+	testImplementation 'org.springframework.boot:spring-boot-starter-test' // Тестирование Spring Boot
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	implementation 'org.apache.pdfbox:pdfbox:2.0.30' // Для чтения pdf
+
+	implementation 'org.apache.poi:poi-ooxml:5.2.3' // Apache POI для работы с Excel файлами
+}
+
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
