@@ -1,5 +1,5 @@
 # 1. Используем официальный образ Gradle для сборки проекта
-FROM gradle:8.5-jdk17 AS build
+FROM gradle:8.5-jdk21 AS build
 WORKDIR /app
 
 # Копируем файлы конфигурации Gradle для предварительного скачивания зависимостей (кэширование)
@@ -15,7 +15,7 @@ COPY src src
 RUN ./gradlew bootJar -x test
 
 # 2. Минимальный образ для запуска готового приложения
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:21-jdk-jammy
 WORKDIR /app
 
 # Копируем jar-файл (в Gradle он обычно называется *-SNAPSHOT.jar или просто по имени проекта)
