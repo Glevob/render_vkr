@@ -27,10 +27,6 @@
 ## Структура
 ```text
 .
-├── gradlew
-├── gradlew.bat
-├── build.gradle
-├── settings.gradle
 └── src/
     └── main/
         ├── java/
@@ -38,15 +34,15 @@
         │       └── accouting/
         │           └── student/
         │               ├── StudentApplication.java   # Точка входа Spring Boot
-        │               ├── config/                   # Конфигурация шифрования (CryptoConfig)
-        │               ├── controllers/              # Web-контроллеры и REST API (StudentController, AuthRestController)
-        │               ├── models/                   # Доменная модель (Student, Passport, Platoon, StudyGroup, MAS)
+        │               ├── config/                   # Конфигурация шифрования и SpringSecurity
+        │               ├── controllers/              # Web-контроллеры
+        │               ├── models/                   # Модели (Student, Passport, Platoon, StudyGroup)
         │               ├── repositories/             # Слой доступа к данным (StudentRepository, UserRepository)
         │               └── services/                 # Бизнес-логика (PlatoonTransferService, PhysicalCalculationService)
         └── resources/
             ├── application.properties                # Конфигурация окружения и СУБД
             ├── db/
-            │   └── changelog/                        # Миграции Liquibase (YAML-чейнджлоги)
+            │   └── changelog/                        # Миграции Liquibase
             └── templates/                            # Интерфейс на базе Thymeleaf
 ```
 
