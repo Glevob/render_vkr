@@ -23,3 +23,40 @@
 - Настройка БД PostgreSQL.
 - Сборка и запуск приложения с помощью Gradle.
 - Запуск веб-интерфейса - http://localhost:8080
+- 
+## Структура
+```text
+.
+├── gradlew
+├── gradlew.bat
+├── build.gradle
+├── settings.gradle
+└── src/
+    └── main/
+        ├── java/
+        │   └── ru/
+        │       └── accouting/
+        │           └── student/
+        │               ├── StudentApplication.java   # Точка входа Spring Boot
+        │               ├── config/                   # Конфигурация шифрования (CryptoConfig)
+        │               ├── controllers/              # Web-контроллеры и REST API (StudentController, AuthRestController)
+        │               ├── models/                   # Доменная модель (Student, Passport, Platoon, StudyGroup, MAS)
+        │               ├── repositories/             # Слой доступа к данным (StudentRepository, UserRepository)
+        │               └── services/                 # Бизнес-логика (PlatoonTransferService, PhysicalCalculationService)
+        └── resources/
+            ├── application.properties                # Конфигурация окружения и СУБД
+            ├── db/
+            │   └── changelog/                        # Миграции Liquibase (YAML-чейнджлоги)
+            └── templates/                            # Интерфейс на базе Thymeleaf
+```
+
+# Требования
+- Java Development Kit (JDK) 17+
+- СУБД PostgreSQL 15+
+
+# Тестовые логины (bcrypt в БД):
+
+| Логин | Пароль | Роль |
+|-------|--------|------|
+| `asd` | `asdasd` | admin |
+| `asdasd` | `asdasd` | technologist |
