@@ -94,8 +94,8 @@ public class StudentDataLoader implements CommandLineRunner {
 
         Map<Integer, Integer> yearDistribution = Map.of(
                 2024, 200,
-                2025, 350,
-                2026, 242
+                2025, 200,
+                2026, 200
         );
 
         List<Student> toSave = new ArrayList<>();
