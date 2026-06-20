@@ -402,7 +402,7 @@ public class StudentController {
         if (formPassportEmpty) { existingStudent.setPassport(null); } else { if (existingPassport == null) { existingPassport = new Passport(); existingPassport.setStudent(existingStudent); existingStudent.setPassport(existingPassport); } existingPassport.setNumberPassport(formPassport.getNumberPassport()); existingPassport.setSeriesPassport(formPassport.getSeriesPassport()); existingPassport.setPlacePassport(formPassport.getPlacePassport()); existingPassport.setDatePassport(formPassport.getDatePassport()); }
         studentStatusService.recalculateStatus(existingStudent);
         studentRepository.save(existingStudent);
-        return "redirect:/student-applied/" + idStudent;
+        return "redirect:/students";
     }
 
     // Удаление///////////////////////////////////////////////////////////////////////

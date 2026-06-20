@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
-    <title>Добавление студента</title>
+    <title>Редактирование студента</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -51,18 +51,23 @@
 
             <div class="card-body p-4 p-md-5">
                 <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
-                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 d-inline-flex">
-                        <i class="bi bi-person-plus fs-3"></i>
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 d-inline-flex">
+                        <i class="bi bi-pencil-square fs-3"></i>
                     </div>
                     <div>
-                        <h4 class="fw-bold text-dark mb-1">Добавление студента</h4>
-                        <p class="text-muted small mb-0">Заполните личные, паспортные и академические данные абитуриента.</p>
+                        <h4 class="fw-bold text-dark mb-1">Редактирование данных студента</h4>
+                        <p class="text-muted small mb-0">Измените необходимые личные, академические или паспортные данные.</p>
                     </div>
                 </div>
 
-                <form th:action="@{/student-applied/add}" th:object="${student}" method="post">
+                <form th:action="@{|/student-applied/${student.idStudent}/edit|}" th:object="${student}" method="post">
 
-                    <!-- Первый блок - личные данные -->
+                    <input type="hidden" th:field="*{idStudent}" />
+                    <div th:if="*{passport != null}">
+                        <input type="hidden" th:field="*{passport.id}" />
+                        <input type="hidden" th:field="*{passport.passportHash}" />
+                    </div>
+
                     <div class="mb-2 d-flex align-items-center gap-2 section-title">
                         <i class="bi bi-card-heading"></i> Личные данные
                     </div>
@@ -106,15 +111,14 @@
                                 <input type="text" th:field="*{phoneNumber}"
                                        class="form-control"
                                        th:classappend="${#fields.hasErrors('phoneNumber')} ? 'is-invalid' : ''"
-                                       minlength="11" maxlength="11" inputmode="numeric"
-                                       pattern="^[0-9]{11}$" title="Номер телефона должен состоять ровно из 11 цифр (без +, скобок и дефисов)"
+                                       inputmode="numeric"
+                                       pattern="^[0-9]+$" title="Номер телефона должен состоять только из цифр (без +, скобок и дефисов)"
                                        placeholder="79000000000" required>
                             </div>
                             <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></div>
                         </div>
                     </div>
 
-                    <!-- Второй блок - Учеба -->
                     <div class="mb-2 d-flex align-items-center gap-2 section-title border-top pt-3">
                         <i class="bi bi-mortarboard"></i> Академическая информация
                     </div>
@@ -145,17 +149,15 @@
                                    class="form-control"
                                    th:classappend="${#fields.hasErrors('studentIdCard')} ? 'is-invalid' : ''"
                                    maxlength="10"
-                                   pattern="^[a-zA-Zа-яА-ЯёЁ0-9-]+$" title="Разрешены только цифры, буквы и дефис (макс. 10 символов)" required>
+                                   pattern="^[a-zA-Zа-яА-ЯёЁ0-9-]+$" title="Разрешены только цифры, буквы и дефис" required>
                             <div class="invalid-feedback" th:if="${#fields.hasErrors('studentIdCard')}" th:errors="*{studentIdCard}"></div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-medium text-secondary">Льгота <span class="text-muted fw-normal">(опционально)</span></label>
-                            <input type="text" th:field="*{noteStudent}"
-                                   class="form-control">
+                            <label class="form-label small fw-medium text-secondary">Льгота / Примечание <span class="text-muted fw-normal">(опционально)</span></label>
+                            <input type="text" th:field="*{noteStudent}" class="form-control">
                         </div>
                     </div>
 
-                    <!-- Третий блок - Данные о воинском учете -->
                     <div class="mb-2 d-flex align-items-center gap-2 section-title border-top pt-3">
                         <i class="bi bi-shield-check"></i> Воинский учет
                     </div>
@@ -177,7 +179,6 @@
                         </div>
                     </div>
 
-                    <!-- Четвертый блок - паспортные данные -->
                     <div class="mb-2 d-flex align-items-center gap-2 section-title border-top pt-3">
                         <i class="bi bi-passport"></i> Паспортные данные
                     </div>
@@ -188,8 +189,8 @@
                             <input type="text" th:field="*{passport.seriesPassport}"
                                    class="form-control"
                                    th:classappend="${#fields.hasErrors('passport.seriesPassport')} ? 'is-invalid' : ''"
-                                   minlength="4" maxlength="4" inputmode="numeric"
-                                   pattern="^[0-9]{4}$" title="Серия паспорта должна состоять ровно из 4 цифр" placeholder="0000" required>
+                                   maxlength="4" inputmode="numeric"
+                                   pattern="^[0-9]+$" title="Серия паспорта должна состоять только из цифр" placeholder="0000" required>
                             <div class="invalid-feedback" th:if="${#fields.hasErrors('passport.seriesPassport')}" th:errors="*{passport.seriesPassport}"></div>
                         </div>
 
@@ -198,8 +199,8 @@
                             <input type="text" th:field="*{passport.numberPassport}"
                                    class="form-control"
                                    th:classappend="${#fields.hasErrors('passport.numberPassport')} ? 'is-invalid' : ''"
-                                   minlength="6" maxlength="6" inputmode="numeric"
-                                   pattern="^[0-9]{6}$" title="Номер паспорта должен состоять ровно из 6 цифр" placeholder="000000" required>
+                                   maxlength="6" inputmode="numeric"
+                                   pattern="^[0-9]+$" title="Номер паспорта должен состоять только из цифр" placeholder="000000" required>
                             <div class="invalid-feedback" th:if="${#fields.hasErrors('passport.numberPassport')}" th:errors="*{passport.numberPassport}"></div>
                         </div>
 
@@ -222,11 +223,11 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-4">
-                        <a th:href="@{/student-applied}" class="btn btn-outline-secondary px-4 fw-medium">
+                        <a th:href="@{|/student-applied/${student.idStudent}|}" class="btn btn-outline-secondary px-4 fw-medium">
                             <i class="bi bi-arrow-left me-1"></i> Отмена
                         </a>
                         <button type="submit" class="btn btn-success px-4 fw-medium shadow-sm">
-                            <i class="bi bi-check-circle me-1"></i> Сохранить студента
+                            <i class="bi bi-check-circle me-1"></i> Сохранить изменения
                         </button>
                     </div>
                 </form>
