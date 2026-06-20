@@ -114,30 +114,8 @@ public class Student {
     @JoinColumn(name = "user_id", unique = true)
     private User user;
 
-//    @Transient
-//    public String getStrengthResultDisplay() {
-//        if (physicalTraining == null || physicalTraining.getStrengthResult() == null) {
-//            return "";
-//        }
-//        return physicalTraining.getStrengthResult().toString();
-//    }
-//
-//    @Transient
-//    public String getSpeedResultDisplay() {
-//        if (physicalTraining == null || physicalTraining.getSpeedResult() == null) {
-//            return "";
-//        }
-//        return String.format("%.2f", physicalTraining.getSpeedResult()).replace('.', ',');
-//    }
-//
-//    @Transient
-//    public String getEnduranceResultDisplay() {
-//        if (physicalTraining == null || physicalTraining.getEnduranceResult() == null) {
-//            return "";
-//        }
-//        return String.format("%.2f", physicalTraining.getEnduranceResult()).replace('.', ',');
-//    }
-
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private StudentCredentials studentCredentials;
 
     // ---------- ВОЗРАСТ ----------
 
