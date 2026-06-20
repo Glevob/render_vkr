@@ -30,6 +30,9 @@ public class SecurityConfig {
                                 "/enter"
                         ).permitAll()
                         .requestMatchers(
+                                "/contest-protocol"
+                        ).hasAnyAuthority("USER")
+                        .requestMatchers(
                                 "/lists",
                                 "/student-applied/**",
                                 "/student-applied",
@@ -41,7 +44,7 @@ public class SecurityConfig {
                                 "/military-commissariats", "/military-commissariats/**",
                                 "/military-accounting-specialties", "/military-accounting-specialties/**",
                                 "/physical-list",
-                                "/contest-protocol", "/contest-protocol/**",
+                                "/contest-protocol/**",
                                 "/student-management"
                         ).hasAnyAuthority("TECHNOLOGIST", "FULL")
                         .requestMatchers(
