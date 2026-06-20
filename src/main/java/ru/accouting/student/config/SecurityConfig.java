@@ -31,7 +31,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/contest-protocol"
-                        ).hasAnyAuthority("USER")
+                        ).hasAnyAuthority("USER", "TECHNOLOGIST", "FULL")
                         .requestMatchers(
                                 "/lists",
                                 "/student-applied/**",
