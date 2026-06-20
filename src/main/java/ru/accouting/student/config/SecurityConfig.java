@@ -54,6 +54,9 @@ public class SecurityConfig {
                         ).hasAnyAuthority("FULL")
                         .anyRequest().hasAnyAuthority("FULL")
                 )
+                .exceptionHandling(exception -> exception
+                        .accessDeniedPage("/access-denied")
+                )
                 .authenticationProvider(authProvider)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
