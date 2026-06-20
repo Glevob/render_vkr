@@ -3,7 +3,6 @@ package ru.accouting.student.config;
 import ru.accouting.student.service.UserServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -28,28 +27,34 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/login",
                                 "/auth/login", "/auth/logout",
-                                "/debug",
-                                "/lists", "/enter", "/contest-list"
+                                "/enter"
                         ).permitAll()
                         .requestMatchers(
+                                "/lists",
                                 "/student-applied/**",
                                 "/student-applied",
                                 "/specialties/**",
                                 "/specialties",
                                 "/groups", "/groups/**",
+                                "/platoons", "/platoons/**",
+                                "/students", "/students/**",
                                 "/military-commissariats", "/military-commissariats/**",
                                 "/military-accounting-specialties", "/military-accounting-specialties/**",
-                                "/physical-list", "/registration", "/api/registration"
+                                "/physical-list",
+                                "/contest-protocol", "/contest-protocol/**",
+                                "/student-management"
                         ).hasAnyAuthority("TECHNOLOGIST", "FULL")
                         .requestMatchers(
-                                "/admin-physical", "/admin-physical/**"
+                                "/admin-physical", "/admin-physical/**",
+                                "/admin", "/admin/users", "/admin/users/**",
+                                "/exercises", "/exercises/**"
                         ).hasAnyAuthority("FULL")
-                        .anyRequest().authenticated()
+                        .anyRequest().hasAnyAuthority("FULL")
                 )
                 .authenticationProvider(authProvider)
                 .formLogin(AbstractHttpConfigurer::disable)
-                .logout(AbstractHttpConfigurer::disable)
-                .csrf(AbstractHttpConfigurer::disable);
+                .logout(AbstractHttpConfigurer::disable);
+//                .csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
 
