@@ -27,7 +27,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/login",
                                 "/auth/login", "/auth/logout",
-                                "/enter"
+                                "/enter", "/access-denied"
                         ).permitAll()
                         .requestMatchers(
                                 "/contest-protocol"
