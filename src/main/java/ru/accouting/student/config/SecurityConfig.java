@@ -53,8 +53,8 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authProvider)
                 .formLogin(AbstractHttpConfigurer::disable)
-                .logout(AbstractHttpConfigurer::disable);
-//                .csrf(AbstractHttpConfigurer::disable);
+                .logout(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
 
