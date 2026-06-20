@@ -411,7 +411,7 @@ public class StudentController {
     public String studentDelete(@PathVariable("id") long idStudent) {
         Student student = studentRepository.findById(idStudent).orElseThrow();
         studentRepository.delete(student);
-        return "redirect:/student";
+        return "redirect:/students";
     }
 
     @PostMapping("/student-applied/{id}/approve")
