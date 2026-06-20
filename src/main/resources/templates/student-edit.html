@@ -1,17 +1,15 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
     <title>Редактирование студента</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        .card-form {
-            max-width: 720px;
-            margin: 0 auto;
-        }
-
         html, body {
             height: 100%;
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
         }
 
         body {
@@ -27,130 +25,209 @@
         footer {
             flex-shrink: 0;
         }
+
+        .card-form {
+            max-width: 800px;
+            margin: 0 auto;
+            border: none;
+            border-radius: 12px;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6c757d;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
 <div th:insert="~{blocks/header :: header}"></div>
+
 <main>
-    <div class="container mt-5 pt-4">
-        <div class="card shadow card-form">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">Редактирование данных студента</h4>
-                <small th:text="${student.lastName + ' ' + student.firstName + ' ' + student.patronymic}">ФИО</small>
-            </div>
+    <div class="container mt-5 pt-3 pb-5">
+        <div class="card shadow-sm card-form bg-white">
 
-            <div class="card-body">
-                <form th:action="@{|/student-applied/${student.idStudent}/edit|}"
-                      th:object="${student}" method="post">
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 d-inline-flex">
+                        <i class="bi bi-pencil-square fs-3"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold text-dark mb-1">Редактирование данных студента</h4>
+                        <p class="text-muted small mb-0">Измените необходимые личные, академические или паспортные данные.</p>
+                    </div>
+                </div>
 
-                    <!-- ФИО -->
-                    <div class="row g-3 mb-3">
+                <form th:action="@{|/student-applied/${student.idStudent}/edit|}" th:object="${student}" method="post">
+
+                    <input type="hidden" th:field="*{idStudent}" />
+                    <div th:if="*{passport != null}">
+                        <input type="hidden" th:field="*{passport.id}" />
+                        <input type="hidden" th:field="*{passport.passportHash}" />
+                    </div>
+
+                    <div class="mb-2 d-flex align-items-center gap-2 section-title">
+                        <i class="bi bi-card-heading"></i> Личные данные
+                    </div>
+
+                    <div class="row g-3 mb-4">
                         <div class="col-md-4">
-                            <label class="form-label">Фамилия</label>
+                            <label class="form-label small fw-medium text-secondary">Фамилия</label>
                             <input type="text" th:field="*{lastName}"
-                                   class="form-control" required>
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid' : ''"
+                                   pattern="^[a-zA-Zа-яА-ЯёЁ\s-]+$" title="Разрешены только буквы, дефис и пробел" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></div>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Имя</label>
+                            <label class="form-label small fw-medium text-secondary">Имя</label>
                             <input type="text" th:field="*{firstName}"
-                                   class="form-control" required>
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid' : ''"
+                                   pattern="^[a-zA-Zа-яА-ЯёЁ\s-]+$" title="Разрешены только буквы, дефис и пробел" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></div>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Отчество</label>
+                            <label class="form-label small fw-medium text-secondary">Отчество <span class="text-muted fw-normal">(при наличии)</span></label>
                             <input type="text" th:field="*{patronymic}"
-                                   class="form-control">
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('patronymic')} ? 'is-invalid' : ''"
+                                   pattern="^[a-zA-Zа-яА-ЯёЁ\s-]+$" title="Разрешены только буквы, дефис и пробел">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('patronymic')}" th:errors="*{patronymic}"></div>
                         </div>
-                    </div>
-
-                    <!-- Дата рождения -->
-                    <div class="mb-3">
-                        <label class="form-label">Дата рождения</label>
-                        <input type="date" th:field="*{birthday}"
-                               class="form-control" required>
-                    </div>
-
-                    <!-- ГРУППА -->
-                    <div class="mb-3">
-                        <label for="groupSelect" class="form-label">Группа</label>
-                        <select id="groupSelect"
-                                class="form-select"
-                                th:field="*{groupStudent}">
-                            <option value="">-- Выберите группу --</option>
-                            <option th:each="g : ${groups}"
-                                    th:value="${g.id}"
-                                    th:text="${g.nameGroup}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Автоинформация по группе -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Курс</label>
-                            <input type="text" id="courseInfo" class="form-control" readonly>
-                        </div>
-                        <div class="col-md-8">
-                            <label class="form-label">Специальность</label>
-                            <input type="text" id="specialtyInfo" class="form-control" readonly>
-                        </div>
-                    </div>
-
-                    <!-- Военкомат -->
-                    <div class="mb-3">
-                        <label class="form-label">Военкомат</label>
-                        <select class="form-select"
-                                th:field="*{militaryCommissariat}" required>
-                            <option value="">-- Выберите военкомат --</option>
-                            <option th:each="mc : ${commissariats}"
-                                    th:value="${mc.id}"
-                                    th:text="${mc.name}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- ВУС -->
-                    <div class="mb-3">
-                        <label class="form-label">Воинский учет (ВУС)</label>
-                        <select class="form-select"
-                                th:field="*{militaryAccountingSpecialty}" required>
-                            <option value="">-- Выберите ВУС --</option>
-                            <option th:each="v : ${vusList}"
-                                    th:value="${v.id}"
-                                    th:text="${v.code + ' - ' + v.title}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Документы и контакты -->
-                    <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Студенческий билет</label>
+                            <label class="form-label small fw-medium text-secondary">Дата рождения</label>
+                            <input type="date" th:field="*{birthday}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('birthday')} ? 'is-invalid' : ''" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('birthday')}" th:errors="*{birthday}"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium text-secondary">Телефон (мобильный)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted small"><i class="bi bi-telephone"></i></span>
+                                <input type="text" th:field="*{phoneNumber}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('phoneNumber')} ? 'is-invalid' : ''"
+                                       inputmode="numeric"
+                                       pattern="^[0-9]+$" title="Номер телефона должен состоять только из цифр (без +, скобок и дефисов)"
+                                       placeholder="79000000000" required>
+                            </div>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2 d-flex align-items-center gap-2 section-title border-top pt-3">
+                        <i class="bi bi-mortarboard"></i> Академическая информация
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="groupSelect" class="form-label small fw-medium text-secondary">Группа</label>
+                        <select id="groupSelect" class="form-select" th:field="*{groupStudent}" required>
+                            <option value="">-- Выберите учебную группу --</option>
+                            <option th:each="g : ${groups}" th:value="${g.id}" th:text="${g.nameGroup}"></option>
+                        </select>
+                    </div>
+
+                    <div class="row g-3 mb-4 p-3 bg-light rounded-3 border border-light-subtle">
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted fw-semibold">Курс</label>
+                            <input type="text" id="courseInfo" class="form-control form-control-sm bg-white text-dark fw-bold border-secondary-subtle" readonly placeholder="Автозаполнение">
+                        </div>
+                        <div class="col-md-9">
+                            <label class="form-label small text-muted fw-semibold">Специальность группы</label>
+                            <input type="text" id="specialtyInfo" class="form-control form-control-sm bg-white text-muted border-secondary-subtle" readonly placeholder="Выберите группу выше для загрузки данных">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium text-secondary">Студенческий билет</label>
                             <input type="text" th:field="*{studentIdCard}"
-                                   class="form-control" required>
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('studentIdCard')} ? 'is-invalid' : ''"
+                                   maxlength="10"
+                                   pattern="^[a-zA-Zа-яА-ЯёЁ0-9-]+$" title="Разрешены только цифры, буквы и дефис" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('studentIdCard')}" th:errors="*{studentIdCard}"></div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Телефон</label>
-                            <input type="text" th:field="*{phoneNumber}"
-                                   class="form-control" placeholder="+7 ..." required>
+                            <label class="form-label small fw-medium text-secondary">Льгота / Примечание <span class="text-muted fw-normal">(опционально)</span></label>
+                            <input type="text" th:field="*{noteStudent}" class="form-control">
                         </div>
                     </div>
 
-                    <!-- Льгота -->
-                    <div class="mb-4">
-                        <label class="form-label">Примечание (noteStudent)</label>
-                        <input type="text" th:field="*{noteStudent}"
-                               class="form-control"
-                               placeholder="льгота, целевое, мед. ограничения и т.п.">
-                        <div class="form-text">Опционально, краткое примечание по студенту.</div>
+                    <div class="mb-2 d-flex align-items-center gap-2 section-title border-top pt-3">
+                        <i class="bi bi-shield-check"></i> Воинский учет
                     </div>
 
-                    <!-- Кнопки -->
-                    <div class="d-flex justify-content-between">
-                        <a th:href="@{/student-applied}" class="btn btn-outline-secondary">
-                            Отмена
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium text-secondary">Военный комиссариат</label>
+                            <select class="form-select" th:field="*{militaryCommissariat}" required>
+                                <option value="">-- Выберите военкомат --</option>
+                                <option th:each="mc : ${commissariats}" th:value="${mc.id}" th:text="${mc.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium text-secondary">Воинский учет (ВУС)</label>
+                            <select th:field="*{militaryAccountingSpecialty}" class="form-select" required>
+                                <option value="">-- Выберите ВУС --</option>
+                                <option th:each="v : ${vusList}" th:value="${v.id}" th:text="${v.code + ' - ' + v.title}"></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-2 d-flex align-items-center gap-2 section-title border-top pt-3">
+                        <i class="bi bi-passport"></i> Паспортные данные
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-medium text-secondary">Серия</label>
+                            <input type="text" th:field="*{passport.seriesPassport}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('passport.seriesPassport')} ? 'is-invalid' : ''"
+                                   maxlength="4" inputmode="numeric"
+                                   pattern="^[0-9]+$" title="Серия паспорта должна состоять только из цифр" placeholder="0000" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('passport.seriesPassport')}" th:errors="*{passport.seriesPassport}"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-medium text-secondary">Номер</label>
+                            <input type="text" th:field="*{passport.numberPassport}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('passport.numberPassport')} ? 'is-invalid' : ''"
+                                   maxlength="6" inputmode="numeric"
+                                   pattern="^[0-9]+$" title="Номер паспорта должен состоять только из цифр" placeholder="000000" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('passport.numberPassport')}" th:errors="*{passport.numberPassport}"></div>
+                        </div>
+
+                        <div class="col-md-5">
+                            <label class="form-label small fw-medium text-secondary">Дата выдачи</label>
+                            <input type="date" th:field="*{passport.datePassport}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('passport.datePassport')} ? 'is-invalid' : ''" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('passport.datePassport')}" th:errors="*{passport.datePassport}"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-medium text-secondary">Место выдачи паспорта</label>
+                        <input type="text" th:field="*{passport.placePassport}"
+                               class="form-control"
+                               th:classappend="${#fields.hasErrors('passport.placePassport')} ? 'is-invalid' : ''"
+                               placeholder="Например: УМВД России по Ярославской области" required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('passport.placePassport')}" th:errors="*{passport.placePassport}"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-4">
+                        <a th:href="@{|/student-applied/${student.idStudent}|}" class="btn btn-outline-secondary px-4 fw-medium">
+                            <i class="bi bi-arrow-left me-1"></i> Отмена
                         </a>
-                        <button type="submit" class="btn btn-success">
-                            Сохранить изменения
+                        <button type="submit" class="btn btn-success px-4 fw-medium shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i> Сохранить изменения
                         </button>
                     </div>
                 </form>
@@ -158,8 +235,8 @@
         </div>
     </div>
 </main>
-<div th:insert="~{blocks/footer :: footer}"></div>
 
+<div th:insert="~{blocks/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
@@ -169,18 +246,13 @@
 
     async function loadGroupInfo() {
         const groupId = groupSelect.value;
-
         courseInfo.value = '';
         specialtyInfo.value = '';
-
-        if (!groupId) {
-            return;
-        }
+        if (!groupId) return;
 
         try {
             const resp = await fetch(`/groups/${groupId}/info`);
             if (!resp.ok) return;
-
             const data = await resp.json();
             courseInfo.value = data.course ?? '';
             specialtyInfo.value = data.specialtyCode + ' - ' + data.specialtyTitle;
@@ -190,11 +262,8 @@
     }
 
     groupSelect.addEventListener('change', loadGroupInfo);
-
     window.addEventListener('DOMContentLoaded', () => {
-        if (groupSelect.value) {
-            loadGroupInfo();
-        }
+        if (groupSelect.value) loadGroupInfo();
     });
 </script>
 </body>
