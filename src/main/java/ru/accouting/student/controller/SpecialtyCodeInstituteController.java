@@ -169,18 +169,27 @@ public class SpecialtyCodeInstituteController {
                 specialtyRepo.findById(id).orElseThrow(() ->
                         new IllegalArgumentException("Специальность не найдена: " + id));
 
-        // проверяем, есть ли группы и студенты с этой специальностью
+        // Находим все группы, привязанные к этой специальности
         List<StudyGroup> groups = studyGroupRepository.findBySpecialty(specialty);
-        boolean hasStudents = !groups.isEmpty()
-                && studentRepository.existsByGroupStudentIn(groups);
 
-        if (hasStudents) {
-            redirectAttributes.addAttribute("error",
-                    "Невозможно удалить специальность: с ней связаны студенты.");
+        // Если список групп не пуст — сразу блокируем удаление
+        if (!groups.isEmpty()) {
+            // Проверяем, есть ли в этих группах студенты, чтобы вывести правильный текст на экран
+            boolean hasStudents = studentRepository.existsByGroupStudentIn(groups);
+
+            if (hasStudents) {
+                redirectAttributes.addAttribute("error",
+                        "Невозможно удалить специальность: с ней связаны активные студенты.");
+            } else {
+                redirectAttributes.addAttribute("error",
+                        "Невозможно удалить специальность: за ней всё ещё закреплены учебные группы (хоть они сейчас и пустые). Сначала удалите или перенесите эти группы.");
+            }
+
             redirectAttributes.addAttribute("specialtyId", id);
             return "redirect:/specialties";
         }
 
+        // Если групп нет вообще — удаляем
         specialtyRepo.delete(specialty);
         return "redirect:/specialties";
     }

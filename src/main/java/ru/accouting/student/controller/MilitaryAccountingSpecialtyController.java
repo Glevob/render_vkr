@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.accouting.student.model.MilitaryAccountingSpecialtyEntity;
 import ru.accouting.student.repository.MilitaryAccountingSpecialtyEntityRepository;
+import ru.accouting.student.repository.PlatoonRepository;
 import ru.accouting.student.repository.StudentRepository;
 
 @Controller
@@ -18,6 +19,7 @@ public class MilitaryAccountingSpecialtyController {
 
     private final MilitaryAccountingSpecialtyEntityRepository repository;
     private final StudentRepository studentRepository;
+    private final PlatoonRepository platoonRepository;
 
     // Список + сортировка + сообщение/связанные студенты
     @GetMapping
@@ -111,13 +113,27 @@ public class MilitaryAccountingSpecialtyController {
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         MilitaryAccountingSpecialtyEntity vus = repository.findById(id).orElseThrow();
 
-        if (studentRepository.existsByMilitaryAccountingSpecialty(vus)) {
-            redirectAttributes.addAttribute("error",
-                    "Невозможно удалить ВУС: с ним связаны студенты.");
+        // Проверяем, существуют ли взводы, связанные с этим ВУС
+        boolean hasPlatoons = platoonRepository.existsBySpecialty(vus);
+
+        if (hasPlatoons) {
+            // Дополнительно смотрим, есть ли в системе студенты с этим ВУС
+            boolean hasStudents = studentRepository.existsByMilitaryAccountingSpecialty(vus);
+
+            if (hasStudents) {
+                redirectAttributes.addAttribute("error",
+                        "Невозможно удалить ВУС: с ним связаны активные студенты.");
+            } else {
+                // Ситуация, когда взводы пустые, но они есть
+                redirectAttributes.addAttribute("error",
+                        "Невозможно удалить ВУС: за ним всё ещё закреплены учебные взводы. Сначала удалите или перенесите эти взводы.");
+            }
+
             redirectAttributes.addAttribute("vusId", id);
             return "redirect:/military-accounting-specialties";
         }
 
+        // Если ни взводов, ни студентов нет - удаляем
         repository.delete(vus);
         return "redirect:/military-accounting-specialties";
     }

@@ -433,15 +433,6 @@ public class StudentController {
     }
 
     // Физическая подготовка////////////////////////////////////////////////////////////////////
-//    private String calculateFinalResult(int totalPoints) {
-//        if (totalPoints >= 235) return "100";
-//        if (totalPoints >= 220) return "95";
-//        if (totalPoints >= 200) return "85";
-//        if (totalPoints >= 180) return "75";
-//        if (totalPoints >= 160) return "65";
-//        return "незачёт";
-//    }
-
     @GetMapping("/students")
     public String allStudentsList(
             @RequestParam(defaultValue = "0") int page,
