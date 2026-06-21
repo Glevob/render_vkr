@@ -55,23 +55,28 @@
                            class="btn btn-outline-primary me-2">
                             <i class="fas fa-edit"></i> Редактировать
                         </a>
-                        <a th:href="@{/student-applied}" class="btn btn-outline-secondary">
+                        <a th:href="@{/students}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left"></i> Назад
                         </a>
                     </div>
                 </div>
 
-                <!-- Основная карточка -->
-                <div class="card shadow-lg border-0">
+                <div class="card shadow-lg border-0 mb-5">
                     <div class="card-body p-4">
 
-                        <!-- Персональные данные -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <h5 class="text-primary mb-2">
+                        <div class="row mb-4 border-bottom pb-4">
+                            <div class="col-md-6 border-end">
+                                <h5 class="text-primary mb-3">
                                     <i class="fas fa-id-card me-2"></i>Основная информация
                                 </h5>
-                                <table class="table table-borderless mb-0">
+                                <table class="table table-borderless mb-4">
+                                    <tr>
+                                        <td class="fw-bold text-muted" style="width: 40%;">Статус:</td>
+                                        <td>
+                                            <span class="badge bg-success px-2 py-1"
+                                                  th:text="${student.status != null ? student.status.displayName : 'Активен'}">Обучается</span>
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td class="fw-bold text-muted">Дата рождения:</td>
                                         <td th:text="${student.birthday}">01.01.2000</td>
@@ -88,15 +93,36 @@
                                         </td>
                                     </tr>
                                 </table>
+
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-passport me-2"></i>Паспортные данные
+                                </h5>
+                                <table class="table table-borderless mb-0" th:if="${student.passport != null}">
+                                    <tr>
+                                        <td class="fw-bold text-muted" style="width: 40%;">Серия / Номер:</td>
+                                        <td th:text="${student.passport.seriesPassport + ' ' + student.passport.numberPassport}">0000 000000</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-muted">Дата выдачи:</td>
+                                        <td th:text="${student.passport.datePassport}">01.01.2014</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-muted">Кем выдан:</td>
+                                        <td class="small" th:text="${student.passport.placePassport}">УМВД России по области</td>
+                                    </tr>
+                                </table>
+                                <div th:if="${student.passport == null}" class="text-muted small ps-2">
+                                    <i class="fas fa-exclamation-circle me-1"></i> Паспортные данные не заполнены
+                                </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <h5 class="text-primary mb-2">
+                            <div class="col-md-6 ps-md-4">
+                                <h5 class="text-primary mb-3">
                                     <i class="fas fa-graduation-cap me-2"></i>Образование
                                 </h5>
                                 <table class="table table-borderless mb-0">
                                     <tr>
-                                        <td class="fw-bold text-muted">Специальность:</td>
+                                        <td class="fw-bold text-muted" style="width: 35%;">Специальность:</td>
                                         <td>
                                             <span th:text="${student.groupStudent.specialty != null ? student.groupStudent.specialty.codeSpecialty + ' - ' + student.groupStudent.specialty.titleSpecialty : ''}">
                                                 04.05.01 - Фундаментальная химия
@@ -106,7 +132,7 @@
                                     <tr>
                                         <td class="fw-bold text-muted">Институт:</td>
                                         <td>
-                                            <span class="badge bg-light text-dark px-3 py-2"
+                                            <span class="badge bg-light text-dark px-3 py-2 text-wrap text-start"
                                                   th:text="${student.groupStudent.specialty != null ? student.groupStudent.specialty.institute : ''}">
                                                 Химический факультет
                                             </span>
@@ -118,23 +144,38 @@
                                             2 / ИУ5-21
                                         </td>
                                     </tr>
+                                    <tr th:if="${student.noteStudent != null and !#strings.isEmpty(student.noteStudent)}">
+                                        <td class="fw-bold text-muted">Льготы:</td>
+                                        <td th:text="${student.noteStudent}">Нет</td>
+                                    </tr>
                                 </table>
                             </div>
                         </div>
 
-                        <!-- Воинский учёт -->
                         <div class="row mb-4">
                             <div class="col-12">
                                 <h5 class="text-danger mb-3">
-                                    <i class="fas fa-shield-alt me-2"></i>Воинский учёт
+                                    <i class="fas fa-shield-alt me-2"></i>Воинский учёт и структура
                                 </h5>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <table class="table table-borderless mb-0">
                                             <tr>
-                                                <td class="fw-bold text-muted">Военкомат:</td>
-                                                <td th:text="${student.militaryCommissariat.name}">
+                                                <td class="fw-bold text-muted" style="width: 40%;">Военкомат:</td>
+                                                <td th:text="${student.militaryCommissariat != null ? student.militaryCommissariat.name : 'Не указан'}">
                                                     Ярославский РВК
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold text-muted">Учебный взвод:</td>
+                                                <td>
+                                                    <span th:if="${student.platoon != null}" class="fw-bold text-dark">
+                                                        <i class="fas fa-users text-secondary me-1"></i>
+                                                        <span th:text="${student.platoon.namePlatoon}">Взвод № 101</span>
+                                                    </span>
+                                                    <span th:if="${student.platoon == null}" class="text-muted small">
+                                                        <i class="fas fa-minus me-1"></i> Не распределен
+                                                    </span>
                                                 </td>
                                             </tr>
                                         </table>
@@ -142,11 +183,11 @@
                                     <div class="col-md-6">
                                         <table class="table table-borderless mb-0">
                                             <tr>
-                                                <td class="fw-bold text-muted">ВУС:</td>
+                                                <td class="fw-bold text-muted" style="width: 25%;">ВУС:</td>
                                                 <td>
                                                     <span class="badge bg-warning text-dark px-3 py-2 vus-badge"
-                                                          th:text="${student.militaryAccountingSpecialty != null ? student.militaryAccountingSpecialty.title : ''}">
-                                                        Солдат запаса «Оператор радиолокационной станции (комплекса)»
+                                                          th:text="${student.militaryAccountingSpecialty != null ? student.militaryAccountingSpecialty.code + ' - ' + student.militaryAccountingSpecialty.title : 'Не указана'}">
+                                                        Солдат запаса «Оператор радиолокационной станции»
                                                     </span>
                                                 </td>
                                             </tr>
@@ -156,19 +197,19 @@
                             </div>
                         </div>
 
-                        <!-- Действия -->
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2 border-top pt-4">
                             <form th:action="@{|/student-applied/${student.idStudent}/delete|}"
                                   method="post" style="display: inline;">
-                                <button type="submit" class="btn btn-danger"
-                                        onclick="return confirm('Удалить студента?')">
+                                <button type="submit" class="btn btn-danger px-4"
+                                        onclick="return confirm('Вы уверены, что хотите безвозвратно удалить карточку этого студента?')">
                                     <i class="fas fa-trash-alt me-1"></i>Удалить
                                 </button>
                             </form>
-                            <a th:href="@{/student-applied}" class="btn btn-secondary ms-auto">
+                            <a th:href="@{/student-applied}" class="btn btn-secondary ms-auto px-4">
                                 <i class="fas fa-list me-1"></i>К списку студентов
                             </a>
                         </div>
+
                     </div>
                 </div>
             </div>
